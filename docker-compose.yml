@@ -2,24 +2,55 @@ version: '3.9'
 name: 'booker'
 
 services:
-  auth:
-    build: ./services/auth
+  redis:
+    image: redis:alpine
+    container_name: redis
     restart: unless-stopped
-    environment:
-      DB_USER: ${POSTGRES_USER}
-      DB_PASSWORD: ${POSTGRES_PASSWORD}
-      DB_HOST: users-postgres
-      DB_PORT: 5432
-      DB_NAME: ${POSTGRES_DB}
-      MODE: ${MODE}
     ports:
-      - "8080:8080"
-    depends_on:
-      - users-postgres
+      - "6379:6379"
     volumes:
-      - ./services/auth/logs:/usr/src/users/logs
+      - redis_data:/data
     networks:
       - booker-net
+  minio:
+    image: minio/minio:latest
+    container_name: minio
+    restart: unless-stopped
+    environment:
+      MINIO_ROOT_USER: ${MINIO_ROOT_USER:-minioadmin}
+      MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD:-minioadmin}
+      MINIO_BUCKET_NAME: ${MINIO_BUCKET_NAME:-orbit-images}
+    ports:
+      - "9000:9000"
+      - "9001:9001"
+    volumes:
+      - minio_data:/data
+      - ./services/minio:/init-scripts
+    command: server /data --console-address ":9001"
+    networks:
+      - booker-net
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:9000/minio/health/live"]
+      interval: 30s
+      timeout: 20s
+      retries: 3
+
+  minio-init:
+    image: minio/mc:latest
+    container_name: minio-init
+    depends_on:
+      minio:
+        condition: service_healthy
+    environment:
+      MINIO_ROOT_USER: ${MINIO_ROOT_USER:-minioadmin}
+      MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD:-minioadmin}
+      MINIO_BUCKET_NAME: ${MINIO_BUCKET_NAME:-orbit-images}
+    volumes:
+      - ./services/minio:/init-scripts
+    entrypoint: ["/init-scripts/init-bucket.sh"]
+    networks:
+      - booker-net
+
   backend:
     build: ./services/backend
     restart: unless-stopped
@@ -30,14 +61,68 @@ services:
       DB_PORT: 5432
       DB_NAME: ${POSTGRES_DB}
       MODE: ${MODE}
+      MINIO_ENDPOINT: minio:9000
+      MINIO_ACCESS_KEY: ${MINIO_ACCESS_KEY:-minioadmin}
+      MINIO_SECRET_KEY: ${MINIO_SECRET_KEY:-minioadmin}
+      MINIO_BUCKET_NAME: ${MINIO_BUCKET_NAME:-orbit-images}
+      MINIO_SECURE: "False"
     ports:
       - "8081:8080"
     depends_on:
       - users-postgres
+      - minio
     volumes:
       - ./services/backend/logs:/usr/src/users/logs
     networks:
       - booker-net
+
+  notification:
+    build: ./services/notification
+    restart: unless-stopped
+    environment:
+      DB_USER: ${POSTGRES_USER}
+      DB_PASSWORD: ${POSTGRES_PASSWORD}
+      DB_HOST: users-postgres
+      DB_PORT: 5432
+      DB_NAME: ${POSTGRES_DB}
+      MODE: ${MODE}
+      MINIO_ENDPOINT: minio:9000
+      MINIO_ACCESS_KEY: ${MINIO_ACCESS_KEY:-minioadmin}
+      MINIO_SECRET_KEY: ${MINIO_SECRET_KEY:-minioadmin}
+      MINIO_BUCKET_NAME: ${MINIO_BUCKET_NAME:-orbit-images}
+      MINIO_SECURE: "False"
+    ports:
+      - "8081:8080"
+    depends_on:
+      - users-postgres
+      - minio
+    networks:
+      - booker-net
+
+  calculation:
+    build: ./services/calculation
+    restart: unless-stopped
+    environment:
+      DB_USER: ${POSTGRES_USER}
+      DB_PASSWORD: ${POSTGRES_PASSWORD}
+      DB_HOST: users-postgres
+      DB_PORT: 5432
+      DB_NAME: ${POSTGRES_DB}
+      MODE: ${MODE}
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+      MINIO_ENDPOINT: minio:9000
+      MINIO_ACCESS_KEY: ${MINIO_ACCESS_KEY:-minioadmin}
+      MINIO_SECRET_KEY: ${MINIO_SECRET_KEY:-minioadmin}
+      MINIO_BUCKET_NAME: ${MINIO_BUCKET_NAME:-orbit-images}
+      MINIO_SECURE: "False"
+    depends_on:
+      - users-postgres
+      - redis
+      - minio
+    networks:
+      - booker-net
+
   users-postgres:
     image: postgres:alpine
     restart: unless-stopped
@@ -54,54 +139,13 @@ services:
     networks:
       - booker-net
 
-  prometheus:
-    image: prom/prometheus:latest
-    container_name: prometheus
-    restart: unless-stopped
-    volumes:
-      - ./services/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml
-      - prometheus_data:/prometheus
-    command:
-      - '--config.file=/etc/prometheus/prometheus.yml'
-      - '--storage.tsdb.path=/prometheus'
-      - '--web.console.libraries=/usr/share/prometheus/console_libraries'
-      - '--web.console.templates=/usr/share/prometheus/consoles'
-      - '--web.enable-lifecycle'
-    ports:
-      - "9090:9090"
-    depends_on:
-      - auth
-      - backend
-    networks:
-      - booker-net
-
-  grafana:
-    image: grafana/grafana:latest
-    container_name: grafana
-    restart: unless-stopped
-    environment:
-      - GF_SECURITY_ADMIN_USER=${GF_ADMIN_USER:-admin}
-      - GF_SECURITY_ADMIN_PASSWORD=${GF_ADMIN_PASSWORD:-changeme}
-      - GF_PATHS_PROVISIONING=/etc/grafana/provisioning
-      - GF_SERVER_ROOT_URL=${GF_HOST}
-      - GF_SERVER_SERVE_FROM_SUB_PATH=true
-    volumes:
-      - ./services/grafana/provisioning:/etc/grafana/provisioning
-      - grafana_data:/var/lib/grafana
-    ports:
-      - "3000:3000"
-    depends_on:
-      - prometheus
-    networks:
-      - booker-net
-
 volumes:
   users-postgres-data:
     name: booker_users_postgres_data
-  prometheus_data:
-    name: booker_prometheus_data
-  grafana_data:
-    name: booker_grafana_data
+  redis_data:
+    name: booker_redis_data
+  minio_data:
+    name: booker_minio_data
 
 networks:
   booker-net:

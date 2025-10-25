@@ -60,7 +60,7 @@ async def listen_to_results():
             )
 
             # Отправляем пользователю
-            await manager.send_personal_message(notification.json(), user_id)
+            await manager.send_personal_message(notification.model_dump_json(), user_id)
             print(f"Sent notification to user {user_id} (task_id={task_id})")
 
         except Exception as e:

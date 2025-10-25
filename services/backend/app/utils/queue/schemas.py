@@ -6,6 +6,7 @@ class Observation(BaseModel):
     observation_time: datetime
     ra: float
     dec: float
+    image_reference: Optional[str] = None
 
 class OrbitCalculationRequest(BaseModel):
     observations: List[Observation]

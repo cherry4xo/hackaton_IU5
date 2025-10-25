@@ -3,7 +3,7 @@ from datetime import datetime, timedelta
 import numpy as np
 from astropy.time import Time
 
-from services.comets.app.utils.orbit_calculation import OrbitCalculator
+from services.calculation.app.utils.orbit_calculation import OrbitCalculator
 
 
 @pytest.fixture

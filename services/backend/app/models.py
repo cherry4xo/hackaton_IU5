@@ -118,6 +118,13 @@ class Observations(TimestampMixin, BaseModel):
     altitude_deg = fields.FloatField(null=False)
     azimuth_deg = fields.FloatField(null=False)
     processed = fields.BooleanField(default=False)
+    
+    # Image fields
+    image_reference = fields.CharField(max_length=255, null=True)
+    image_width = fields.IntField(null=True)
+    image_height = fields.IntField(null=True)
+    image_format = fields.CharField(max_length=10, null=True)
+    image_size = fields.BigIntField(null=True)
 
     @classmethod
     async def create(cls, observ: CreateObservations) -> "Observations":
