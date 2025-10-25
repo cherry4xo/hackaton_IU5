@@ -102,7 +102,6 @@ class OrbitCalculator:
         with solar_system_ephemeris.set("de440s"):
             for t, r_obs_vec in zip(times, r_obs_list):
                 try:
-                    # Положение кометы в гелиоцентрической СК
                     r_comet = orbit.propagate(t).r
                     r_comet_vec = np.array([
                         r_comet[0].to(u.km).value,
@@ -110,10 +109,8 @@ class OrbitCalculator:
                         r_comet[2].to(u.km).value
                     ]) * u.km
 
-                    # Геоцентрическое положение кометы
-                    r_geo_vec = r_comet_vec - r_obs_vec  # вектор от Земли к комете
+                    r_geo_vec = r_comet_vec - r_obs_vec
 
-                    # Преобразуем в небесные координаты
                     coord = SkyCoord(
                         x=r_geo_vec[0], y=r_geo_vec[1], z=r_geo_vec[2],
                         representation_type='cartesian'
@@ -128,13 +125,11 @@ class OrbitCalculator:
         computed_ra = np.array(computed_ra)
         computed_dec = np.array(computed_dec)
 
-        # Разница с учётом цикличности RA
-        ra_diff = (computed_ra - obs_ra + 180) % 360 - 180  # от -180 до +180
+        ra_diff = (computed_ra - obs_ra + 180) % 360 - 180
         dec_diff = computed_dec - obs_dec
 
-        # Объединяем в один вектор остатков
         residuals = np.hstack([ra_diff, dec_diff])
-        residuals[np.isnan(residuals)] = 1e6  # штраф за ошибки
+        residuals[np.isnan(residuals)] = 1e6
 
         return residuals
     
@@ -187,7 +182,6 @@ class OrbitCalculator:
                     r.z.to(u.km).value
                 ]) * u.km)
 
-        # Начальное приближение: типичная комета
         x0 = [
             3.0,    # a: большая полуось, AU
             0.6,    # ecc: эксцентриситет
@@ -197,13 +191,11 @@ class OrbitCalculator:
             0.0     # nu: истинная аномалия
         ]
 
-        # Ограничения
         bounds = (
-            [0.1, 0.0, 0.0, -180.0, -180.0, -180.0],  # минимумы
-            [100.0, 1.0, 180.0, 360.0, 360.0, 360.0]  # максимумы
+            [0.1, 0.0, 0.0, -180.0, -180.0, -180.0],
+            [100.0, 1.0, 180.0, 360.0, 360.0, 360.0]
         )
 
-        # Запуск оптимизации МНК
         result = least_squares(
             self._compute_radec_residuals,
             x0,
@@ -224,7 +216,6 @@ class OrbitCalculator:
         else:
             a, ecc, inc, raan, argp, nu = result.x
 
-        # Проверка на физичность
         if ecc >= 1:
             is_elliptic = False
             a = None
@@ -235,7 +226,6 @@ class OrbitCalculator:
         else:
             is_elliptic = True
 
-        # Попытка создать орбиту для определения времени перигелия
         try:
             orbit_a = (a * u.AU) if is_elliptic else (1e6 * u.km)
             orbit = Orbit.from_classical(
@@ -286,7 +276,6 @@ class OrbitCalculator:
             format="unix"
         )
 
-        # Для гиперболических орбит используем a = 1e6 км как временную заглушку
         try:
             a = orbit_elements["semi_major_axis"]
             if a is None or a <= 0:
@@ -301,7 +290,7 @@ class OrbitCalculator:
                 inc=orbit_elements["inclination"] * u.deg,
                 raan=orbit_elements["longitude_ascending_node"] * u.deg,
                 argp=orbit_elements["argument_periapsis"] * u.deg,
-                nu=0 * u.deg,  # начальная аномалия — можно улучшить
+                nu=0 * u.deg,
                 epoch=Time(orbit_elements["periapsis_time"])
             )
         except Exception as e:
@@ -316,20 +305,17 @@ class OrbitCalculator:
         closest_time = None
 
         with solar_system_ephemeris.set("de440s"):
-            # Пропагация орбиты
             try:
                 cartesian = orbit.propagate(times)
-                r_comet_list = cartesian.cartesian.xyz.T  # форма (N, 3)
+                r_comet_list = cartesian.cartesian.xyz.T
                 r_comet_list = r_comet_list * u.km
 
-                # Положения Земли
                 r_earth_list = []
                 for t in times:
                     r = get_body_barycentric("earth", t)
                     r_earth_list.append([r.x.to(u.km).value, r.y.to(u.km).value, r.z.to(u.km).value])
                 r_earth_list = np.array(r_earth_list) * u.km
 
-                # Вектор расстояния
                 r_diff = r_comet_list - r_earth_list
                 distances_au = np.linalg.norm(r_diff, axis=1) * u.km.to(u.AU)
 
