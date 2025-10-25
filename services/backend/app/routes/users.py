@@ -4,7 +4,7 @@ from typing import List
 
 from app.schemas import UserCreate, UserCreated, UserGet, UserChangePasswordIn, UserGrantPrivileges
 from app.models import User
-from app.services.users import create_user, change_password, grant_user, update_profile
+from app.services.users import create_user, change_password, grant_user
 from app.utils.contrib import get_current_user, get_current_admin
 
 
