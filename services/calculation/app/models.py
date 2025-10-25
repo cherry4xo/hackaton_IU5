@@ -52,7 +52,7 @@ class User(TimestampMixin, BaseModel):
 class Observatories(BaseModel):
     uuid = fields.UUIDField(pk=True)
     code = fields.CharField(max_length=16, null=False, unique=True)
-    name = fields.CharEnumField(max_length=128)
+    name = fields.CharField(max_length=128)
     latitude = fields.FloatField(null=False)
     longitude = fields.FloatField(null=False)
     elevation_m = fields.FloatField(null=False)
