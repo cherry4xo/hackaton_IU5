@@ -51,6 +51,7 @@ async def upgrade_db(app: FastAPI, db_url: str = None):
     Initializes Aerich and applies any pending migrations.
     Should be run during application startup.
     """
+    global AERICH_COMMAND
     logger.info("Initializing database and applying migrations...")
     logger.debug("Using Aerich config: %s", TORTOISE_ORM)
     logger.debug("Migrations base location: %s", AERICH_COMMAND.location)
@@ -111,7 +112,6 @@ async def upgrade_db(app: FastAPI, db_url: str = None):
                     logger.info("Attempting to reset Aerich migration state...")
                     try:
                         # Recreate the command instance
-                        global AERICH_COMMAND
                         AERICH_COMMAND = Command(tortoise_config=TORTOISE_ORM, app="models", location=MIGRATION_LOCATION)
                         await AERICH_COMMAND.upgrade(run_in_transaction=True)
                         logger.info("Retry of 'aerich upgrade' finished successfully.")
@@ -163,7 +163,7 @@ async def create_default_moderator_user() -> None:
 
 
 async def init(app: FastAPI):
-    await upgrade_db(app)
+    # await upgrade_db(app)
     register_db(app)
     logger.debug("Connected to db")
-    await create_default_moderator_user()
+    # await create_default_moderator_user()
