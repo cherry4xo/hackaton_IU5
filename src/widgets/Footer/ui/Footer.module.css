@@ -1,0 +1,35 @@
+.footer {
+  background-color: #000000;
+  padding: 30px 40px; 
+  border-top: 1px solid rgba(255, 255, 255, 0.1); 
+  width: 100%;
+}
+
+.footerContainer {
+  max-width: 1200px; 
+  margin: 0 auto;
+  display: flex;
+  justify-content: space-between; 
+  align-items: center; 
+}
+
+.copyright {
+  margin: 0;
+  color: rgba(255, 255, 255, 0.6); 
+  font-size: 14px;
+}
+
+.socialLinks {
+  display: flex;
+  gap: 25px; 
+}
+
+.socialLinks a {
+  color: rgba(255, 255, 255, 0.6);
+  text-decoration: none;
+  transition: color 0.3s ease;
+}
+
+.socialLinks a:hover {
+  color: #ffffff; 
+}
