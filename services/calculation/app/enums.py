@@ -6,5 +6,5 @@ class UserRole(str, enum.Enum):
         return list(map(lambda c: c.value, cls))
 
     """ Defines the roles a user can have """
-    BOOKER = "booker"
+    RESEARCHER = "researcher"
     MODERATOR = "moderator"
