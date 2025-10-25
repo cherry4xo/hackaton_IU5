@@ -2,7 +2,7 @@ from fastapi import HTTPException, Depends
 from pydantic import UUID4
 from tortoise.exceptions import IntegrityError
 
-from app.schemas import UserCreate, UserChangePasswordIn, UserGrantPrivileges, UserUpdateProfile
+from app.schemas import UserCreate, UserChangePasswordIn, UserGrantPrivileges
 from app.models import User
 from app.enums import UserRole
 from app.utils import password
@@ -84,29 +84,3 @@ async def grant_user(user_uuid: UUID4, user_grant: UserGrantPrivileges):
          raise HTTPException(status_code=500, detail="Failed to save user role.")
 
     return user
-
-
-@log_calls
-async def update_profile(current_user: User, profile_data: UserUpdateProfile) -> User:
-    """
-    Обновляет данные профиля пользователя (пока только telegram_id).
-    Применяет только те поля, которые переданы в profile_data.
-    """
-    update_data = profile_data.model_dump(exclude_unset=True)
-
-    if not update_data:
-        return current_user
-
-    current_user.update_from_dict(update_data)
-
-    try:
-        await current_user.save(update_fields=list(update_data.keys()))
-        print(f"Профиль пользователя {current_user.username} обновлен: {update_data}")
-    except IntegrityError as e:
-        print(f"Ошибка целостности при обновлении профиля {current_user.username}: {e}")
-        raise HTTPException(status_code=500, detail="Ошибка базы данных при обновлении профиля.")
-    except Exception as e:
-        print(f"Неожиданная ошибка при обновлении профиля {current_user.username}: {e}")
-        raise HTTPException(status_code=500, detail="Не удалось обновить профиль.")
-
-    return current_user
