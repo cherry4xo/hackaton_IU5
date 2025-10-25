@@ -1,0 +1,50 @@
+.inputContainer {
+  width: 100%;
+  position: relative;
+}
+
+.label {
+  display: block;
+  font-size: 14px;
+  font-weight: 400;
+  color: rgba(255, 255, 255, 0.8);
+  margin-bottom: 8px;
+}
+
+.input {
+  width: 100%;
+  padding: 14px 16px; 
+  font-size: 16px;
+  font-family: inherit;
+  color: #ffffff;
+  background-color: #1a1a3d;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 12px; 
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.input::placeholder {
+  color: rgba(255, 255, 255, 0.5);
+}
+
+.input:focus {
+  outline: none;
+  border-color: #ffffff;
+  box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.1);
+}
+
+.errorInput {
+  border-color: #ff4d4d; 
+}
+
+.errorInput:focus {
+  border-color: #ff4d4d;
+  box-shadow: 0 0 0 3px rgba(255, 77, 77, 0.2);
+}
+
+.errorMessage {
+  display: block;
+  color: #ff4d4d;
+  font-size: 13px;
+  margin-top: 6px;
+}

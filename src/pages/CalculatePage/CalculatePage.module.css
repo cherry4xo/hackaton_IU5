@@ -1,0 +1,7 @@
+.pageWrapper {
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  padding: 80px 20px;
+  min-height: 100%; 
+}

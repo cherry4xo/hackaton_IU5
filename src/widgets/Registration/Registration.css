@@ -10,8 +10,6 @@
     align-items: center;
     z-index: 1000;
   }
-  
-  /* Основной контейнер модального окна регистрации */
   .registration-modal {
     position: relative;
     background-color: #000;
@@ -21,11 +19,9 @@
     max-width: 400px;
     display: flex;
     flex-direction: column;
-    gap: 20px; /* Уменьшим отступ для большего кол-ва полей */
+    gap: 20px; 
     box-shadow: 0 4px 20px rgba(138, 43, 226, 0.2);
   }
-  
-  /* Кнопка закрытия */
   .close-button {
     position: absolute;
     top: 16px;
@@ -36,8 +32,6 @@
     font-size: 28px;
     cursor: pointer;
   }
-  
-  /* Заголовок "Регистрация" */
   .registration-title {
     color: white;
     font-size: 32px;
@@ -45,15 +39,11 @@
     text-align: left;
     margin: 0;
   }
-  
-  /* Форма */
   .registration-form {
     display: flex;
     flex-direction: column;
-    gap: 16px; /* Расстояние между полями ввода */
+    gap: 16px;
   }
-  
-  /* Стилизация кнопки "Зарегистрироваться" */
   .registration-button {
     width: 100%;
     background-color: #8A2BE2;
@@ -62,14 +52,12 @@
     padding: 14px 0;
     font-size: 18px;
     border-radius: 12px;
-    margin-top: 8px; /* Небольшой отступ сверху */
+    margin-top: 8px;
   }
   
   .registration-button:hover:not(.disabled) {
     background-color: #7b24ca;
   }
-  
-  /* Ссылка для переключения на форму входа */
   .switch-form-link {
     background: none;
     border: none;

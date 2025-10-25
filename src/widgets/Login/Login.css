@@ -1,4 +1,3 @@
-/* Оверлей для затемнения фона */
 .modal-overlay {
     position: fixed;
     top: 0;
@@ -11,22 +10,20 @@
     align-items: center;
     z-index: 1000;
   }
-  
-  /* Основной контейнер модального окна */
+
   .login-modal {
     position: relative;
     background-color: #000;
     padding: 40px;
     border-radius: 16px;
     width: 100%;
-    max-width: 400px; /* Ограничиваем максимальную ширину */
+    max-width: 400px;
     display: flex;
     flex-direction: column;
-    gap: 24px; /* Расстояние между элементами */
+    gap: 24px;
     box-shadow: 0 4px 20px rgba(138, 43, 226, 0.2);
   }
   
-  /* Кнопка закрытия */
   .close-button {
     position: absolute;
     top: 16px;
@@ -38,7 +35,6 @@
     cursor: pointer;
   }
   
-  /* Заголовок "Вход" */
   .login-title {
     color: white;
     font-size: 32px;
@@ -47,24 +43,21 @@
     margin: 0;
   }
   
-  /* Форма */
   .login-form {
     display: flex;
     flex-direction: column;
-    gap: 20px; /* Расстояние между полями ввода и кнопкой */
+    gap: 20px;
   }
   
-  /* Контейнер для пароля и ссылки "Забыли пароль?" */
   .password-container {
     position: relative;
   }
   
-  /* Ссылка "Забыли пароль?" */
   .forgot-password-link {
     position: absolute;
-    top: 0; /* Выравниваем по верху, где находится label */
+    top: 0;
     right: 0;
-    color: #8A2BE2; /* Фиолетовый цвет */
+    color: #8A2BE2;
     text-decoration: none;
     font-size: 14px;
   }
@@ -73,22 +66,20 @@
     text-decoration: underline;
   }
   
-  /* Стилизация кнопки "Войти" под макет */
   .login-button {
     width: 100%;
-    background-color: #8A2BE2; /* Яркий фиолетовый */
+    background-color: #8A2BE2;
     color: white;
     font-weight: 600;
-    padding: 14px 0; /* Увеличиваем паддинг для высоты */
+    padding: 14px 0;
     font-size: 18px;
     border-radius: 12px;
   }
   
   .login-button:hover:not(.disabled) {
-    background-color: #7b24ca; /* Чуть темнее при наведении */
+    background-color: #7b24ca;
   }
   
-  /* Ссылка "Зарегистрироваться" */
   .register-link {
     color: #8A2BE2;
     text-decoration: none;

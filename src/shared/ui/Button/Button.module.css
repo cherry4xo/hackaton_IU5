@@ -5,28 +5,26 @@
   gap: 8px;
   border: none;
   border-radius: 8px;
-  font-family: inherit; /* Наследуем Poppins из body */
+  font-family: inherit; 
   font-weight: 500;
   cursor: pointer;
-  transition: all 0.3s ease; /* Сделаем переход чуть плавнее */
+  transition: all 0.3s ease; 
   position: relative;
 }
 
-/* --- Стили для варианта 'outline' --- */
 .outline {
   background-color: transparent;
-  color: #ffffff; /* Белый текст */
-  border: 2px solid #ffffff; /* Белая рамка */
+  color: #ffffff;
+  border: 2px solid #ffffff; 
 }
 
 .outline:hover:not(.disabled) {
-  background-color: #ffffff; /* Фон становится белым при наведении */
-  color: #100199; /* Текст становится темно-синим */
+  background-color: #ffffff; 
+  color: #100199; 
   transform: translateY(-3px);
   box-shadow: 0 8px 15px rgba(0, 0, 0, 0.2);
 }
 
-/* --- Другие варианты (оставим для будущего) --- */
 .primary {
   background-color: #ffffff;
   color: #100199;
@@ -36,7 +34,6 @@
 }
 
 
-/* --- Размеры --- */
 .sm {
   padding: 8px 16px;
   font-size: 14px;
@@ -47,14 +44,10 @@
   font-size: 16px;
 }
 
-/* Этот размер идеально подходит для нашей кнопки */
 .lg {
   padding: 14px 28px;
-  font-size: 16px; /* 1rem */
+  font-size: 16px; 
 }
-
-
-/* --- Состояния --- */
 .disabled {
   opacity: 0.6;
   cursor: not-allowed;

@@ -1,0 +1,222 @@
+/* --- ОСНОВНОЙ КОНТЕЙНЕР ("ЧЕРНЫЙ ФРЕЙМ") --- */
+.research-container {
+  background-color: #000;
+  padding: 40px;
+  border-radius: 16px;
+  width: 100%;
+  max-width: 1100px;
+  margin: 40px auto;
+  box-shadow: 0 4px 20px rgba(76, 0, 130, 0.2);
+}
+
+/* --- ЗАГОЛОВОК "РАСЧЁТ" --- */
+.research-title {
+  color: white;
+  font-size: 32px;
+  font-weight: 600;
+  text-align: center;
+  margin-top: 0;
+  margin-bottom: 30px;
+}
+
+/* --- ГЛАВНАЯ ОБЕРТКА ДЛЯ ДВУХ КОЛОНОК --- */
+.content-wrapper {
+  display: flex;
+  gap: 40px;
+  align-items: flex-start;
+}
+
+/* --- ЛЕВАЯ КОЛОНКА (СЕКЦИЯ ВВОДА) --- */
+.input-section {
+  flex: 2;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+/* --- ПРАВАЯ КОЛОНКА (ЗАГРУЗКА ФАЙЛОВ) --- */
+.file-upload-section {
+  flex: 1;
+  min-width: 0;
+}
+
+/*
+ =======================================================
+  КЛЮЧЕВЫЕ ИСПРАВЛЕНИЯ В ВЕРСТКЕ СТРОК И ЗАГОЛОВКОВ
+ =======================================================
+*/
+
+/* --- Заголовки над полями ввода (ИСПРАВЛЕНО) --- */
+.observations-header {
+  display: flex; /* Используем Flexbox для точного выравнивания */
+  align-items: center;
+  gap: 10px; /* Тот же отступ, что и в строках */
+  color: rgba(255, 255, 255, 0.6);
+  font-size: 12px;
+  margin-bottom: 8px;
+  padding: 0 8px; /* Тот же горизонтальный паддинг, что и у .observation-row */
+}
+/* "Пустышка" для выравнивания с номером строки */
+.observations-header::before {
+  content: '';
+  width: 36px; /* Ширина .row-number */
+  flex-shrink: 0;
+}
+.observations-header span {
+  flex: 1;
+  min-width: 0; /* Позволяет тексту сжиматься */
+  text-align: center;
+}
+/* "Пустышка" для выравнивания с кнопкой удаления */
+.observations-header::after {
+  content: '';
+  width: 36px; /* Ширина .delete-row-button */
+  flex-shrink: 0;
+}
+
+
+/* Список строк с инпутами */
+.observations-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+/* Одна строка с инпутами (ИСПРАВЛЕНО) */
+.observation-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background-color: #1a1a3d;
+  border-radius: 12px;
+  padding: 8px;
+  border: 1px solid transparent;
+  transition: border-color 0.2s;
+}
+.observation-row:hover {
+  border-color: rgba(255, 255, 255, 0.3);
+}
+
+/* Номер строки */
+.row-number {
+  background-color: #4c28bd;
+  color: white;
+  font-weight: 600;
+  border-radius: 8px;
+  width: 36px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+/* Поле ввода (ИСПРАВЛЕНО) */
+.obs-input {
+  flex: 1;
+  background: none;
+  border: none;
+  color: white;
+  font-size: 16px;
+  padding: 8px;
+  text-align: center;
+  min-width: 0; /* Ключевое свойство! Позволяет инпутам правильно сжиматься */
+}
+.obs-input:focus {
+  outline: none;
+}
+
+/* Кнопка "Удалить строку" */
+.delete-row-button {
+  background-color: #4c28bd;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  width: 36px;
+  height: 36px;
+  cursor: pointer;
+  font-size: 20px;
+  flex-shrink: 0;
+  transition: background-color 0.2s;
+}
+.delete-row-button:hover {
+  background-color: #ff4d4d;
+}
+
+
+/*
+ =======================================================
+  ОСТАЛЬНЫЕ СТИЛИ (без изменений)
+ =======================================================
+*/
+
+.add-row-button {
+  background: none;
+  border: 2px dashed rgba(255, 255, 255, 0.3);
+  color: rgba(255, 255, 255, 0.6);
+  border-radius: 12px;
+  padding: 12px;
+  cursor: pointer;
+  margin-top: 15px;
+  transition: all 0.2s;
+}
+.add-row-button:hover {
+  border-color: #8A2BE2;
+  color: white;
+}
+
+.file-drop-zone {
+  border: 2px dashed rgba(255, 255, 255, 0.3);
+  border-radius: 16px;
+  padding: 20px;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  cursor: pointer;
+  transition: border-color 0.2s;
+}
+.file-drop-zone:hover {
+  border-color: #8A2BE2;
+}
+.upload-icon {
+  font-size: 40px;
+  margin-bottom: 10px;
+}
+.upload-text {
+  color: #8A2BE2;
+  font-weight: 500;
+}
+.upload-hint {
+  font-size: 14px;
+  color: rgba(255, 255, 255, 0.6);
+  margin-top: 5px;
+}
+
+.image-preview-container {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+  gap: 10px;
+}
+.image-preview {
+  width: 100%;
+  height: 100px;
+  object-fit: cover;
+  border-radius: 8px;
+}
+
+.calculate-button {
+  width: 100%;
+  background-color: #5C49FF;
+  color: white;
+  font-weight: 600;
+  padding: 16px 0;
+  font-size: 18px;
+  border-radius: 12px;
+  margin-top: 30px;
+}
+.calculate-button:hover:not(.disabled) {
+  background-color: #5C49FF;
+}
