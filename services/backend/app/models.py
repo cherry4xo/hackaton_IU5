@@ -43,7 +43,7 @@ class User(TimestampMixin, BaseModel):
     email = fields.CharField(max_length=255, unique=True, null=True)
     password_hash = fields.CharField(max_length=255, null=True)
     registration_date = fields.DateField(auto_now_add=True)
-    role = fields.CharEnumField(UserRole, default=UserRole.BOOKER, description="User role")
+    role = fields.CharEnumField(UserRole, default=UserRole.RESEARCHER, description="User role")
 
     @classmethod
     async def create(cls, user: UserCreate) -> "User":

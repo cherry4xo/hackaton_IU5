@@ -9,8 +9,6 @@ from tortoise import fields
 from tortoise.models import Model
 from tortoise.exceptions import DoesNotExist
 
-from app.utils import password
-from app.schemas import UserCreate
 from app.enums import UserRole
 
 class CalculationTaskStatus(str, enum.Enum):
@@ -43,41 +41,7 @@ class User(TimestampMixin, BaseModel):
     email = fields.CharField(max_length=255, unique=True, null=True)
     password_hash = fields.CharField(max_length=255, null=True)
     registration_date = fields.DateField(auto_now_add=True)
-    role = fields.CharEnumField(UserRole, default=UserRole.BOOKER, description="User role")
-
-    @classmethod
-    async def create(cls, user: UserCreate) -> "User":
-        user_dict = user.model_dump(exclude=["password"])
-        password_hash = password.get_password_hash(password=user.password)
-        model = cls(**user_dict, password_hash=password_hash, registration_date=date.today())
-        return model
-    
-    @classmethod
-    async def get_by_uuid(cls, uuid: UUID4) -> "User":
-        try:
-            query = cls.get_or_none(uuid=uuid)
-            user = await query
-            return user
-        except DoesNotExist:
-            return None
-
-    @classmethod
-    async def get_by_username(cls, username: str) -> Optional["User"]:
-        try:
-            query = cls.get_or_none(username=username)
-            user = await query
-            return user
-        except DoesNotExist:
-            return None
-        
-    @classmethod 
-    async def get_by_email(cls, email: str) -> Optional["User"]:
-        try:
-            query = cls.get_or_none(email=email)
-            user = await query
-            return user
-        except DoesNotExist:
-            return None
+    role = fields.CharEnumField(UserRole, default=UserRole.RESEARCHER, description="User role")
 
     def __str__(self):
         return f"{self.username} ({self.role.value})"
