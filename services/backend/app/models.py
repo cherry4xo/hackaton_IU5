@@ -108,7 +108,7 @@ class Comets(TimestampMixin, BaseModel):
 
 class Observations(TimestampMixin, BaseModel):
     uuid = fields.UUIDField(pk=True)
-    comet_id: fields.ForeignKeyRelation["Comets"] = fields.ForeignKeyField("models.Comets", related_name="comets", on_delete=fields.CASCADE, null=False)
+    comet_id: fields.ForeignKeyRelation["Comets"] = fields.ForeignKeyField("models.Comets", related_name="comets_observations", on_delete=fields.CASCADE, null=False)
     observatory_id: fields.ForeignKeyRelation["Observatories"] = fields.ForeignKeyField("models.Observatories", related_name="observatories", on_delete=fields.CASCADE, null=False)
     observer_id: fields.ForeignKeyRelation["User"] = fields.ForeignKeyField("models.User", related_name="obsevres", on_delete = fields.CASCADE, null=False)
     observation_time = fields.DatetimeField(null=False)
@@ -137,7 +137,7 @@ class Observations(TimestampMixin, BaseModel):
 
 class Orbits(TimestampMixin, BaseModel):
     uuid = fields.UUIDField(pk=True)
-    comet_id: fields.ForeignKeyRelation["Comets"] = fields.ForeignKeyField("models.Comets", related_name="comets", on_delete=fields.CASCADE, null=False)
+    comet_id: fields.ForeignKeyRelation["Comets"] = fields.ForeignKeyField("models.Comets", related_name="comets_orbits", on_delete=fields.CASCADE, null=False)
     semi_major_axis = fields.FloatField()
     eccentricity = fields.FloatField()
     inclination = fields.FloatField() 
@@ -153,7 +153,7 @@ class Orbits(TimestampMixin, BaseModel):
 
 class Close_approaches(TimestampMixin, BaseModel):
     uuid = fields.UUIDField(pk=True)
-    comet_id: fields.ForeignKeyRelation["Comets"] = fields.ForeignKeyField("models.Comets", related_name="comets", on_delete=fields.CASCADE, null=False)
+    comet_id: fields.ForeignKeyRelation["Comets"] = fields.ForeignKeyField("models.Comets", related_name="comets_approaches", on_delete=fields.CASCADE, null=False)
     approach_time = fields.DatetimeField(null=False)
     distance_au = fields.FloatField(null=True)
     distance_km = fields.FloatField(null=False)
