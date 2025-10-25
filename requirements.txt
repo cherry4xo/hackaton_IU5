@@ -18,3 +18,10 @@ faker
 prometheus-fastapi-instrumentator>=6.1.0
 prometheus-client
 astropy
+scipy
+poliastro
+astroquery
+sbpy
+pyerfa
+jplephem
+spiceypy
