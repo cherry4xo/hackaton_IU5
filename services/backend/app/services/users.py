@@ -11,7 +11,6 @@ from app.logger import log_calls
 
 from app import metrics
 
-
 @log_calls
 async def create_user(user: UserCreate):
     user_db = await User.get_by_email(email=user.email)
@@ -30,11 +29,11 @@ async def create_user(user: UserCreate):
             detail="The user with this username already exists"
         )
     
-    user_db = await User.create(user=user)
+        user_db = await User.create(user=user)
 
-    metrics.backend_user_registrations_total.inc()
+        metrics.backend_user_registrations_total.inc()
 
-    return user_db
+        return user_db
 
 
 @log_calls

@@ -100,3 +100,14 @@ class RefreshToken(BaseModel):
 
 class Msg(BaseModel):
     message: str = None
+
+class CreateObservations(BaseModel):
+    comet_uuid: UUID4 = Field(..., alias="comet_id")
+    observatory_uuid: UUID4 = Field(..., alias="observatory_id")
+    observation_time: datetime = Field(..., alias="observation_time")
+    
+    # Параметры
+    ra_deg: float 
+    dec_deg: float 
+    altitude_deg: float 
+    azimuth_deg: float 

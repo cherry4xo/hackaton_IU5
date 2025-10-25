@@ -10,7 +10,7 @@ from tortoise.models import Model
 from tortoise.exceptions import DoesNotExist
 
 from app.utils import password
-from app.schemas import UserCreate
+from app.schemas import UserCreate, CreateObservations
 from app.enums import UserRole
 
 class CalculationTaskStatus(str, enum.Enum):
@@ -118,6 +118,12 @@ class Observations(TimestampMixin, BaseModel):
     altitude_deg = fields.FloatField(null=False)
     azimuth_deg = fields.FloatField(null=False)
     processed = fields.BooleanField(default=False)
+
+    @classmethod
+    async def create(cls, observ: CreateObservations) -> "Observations":
+        observ_dict = observ.model_dump()
+        model = cls(**observ_dict, observation_time=date.today())
+        return model
 
     class Meta:
         table = "Observations"
