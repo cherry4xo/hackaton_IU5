@@ -2,11 +2,10 @@ from fastapi import APIRouter, Body, Depends, HTTPException, Path
 from pydantic import UUID4
 from typing import List
 
-from app.schemas import UserCreate, UserCreated, UserGet, UserChangePasswordIn, UserGrantPrivileges, UserUpdateProfile
+from app.schemas import UserCreate, UserCreated, UserGet, UserChangePasswordIn, UserGrantPrivileges
 from app.models import User
 from app.services.users import create_user, change_password, grant_user, update_profile
-from app.utils.contrib import get_current_user, get_current_moderator
-from app.utils import password
+from app.utils.contrib import get_current_user, get_current_admin
 
 
 router = APIRouter()
@@ -25,20 +24,16 @@ async def route_get_user(user: User = Depends(get_current_user)):
     return user
 
 
-@router.patch("/me", response_model=UserGet, status_code=200)
-async def route_update_user_me(
-    profile_data: UserUpdateProfile,
-    current_user: User = Depends(get_current_user)
-):
-    """
-    Обновляет профиль текущего пользователя (например, telegram_id).
-    Требует аутентификации.
-    """
-    updated_user = await update_profile(
-        current_user=current_user,
-        profile_data=profile_data
-    )
-    return updated_user
+# @router.patch("/me", response_model=UserGet, status_code=200)
+# async def route_update_user_me(
+#     profile_data: UserUpdateProfile,
+#     current_user: User = Depends(get_current_user)
+# ):
+#     updated_user = await update_profile(
+#         current_user=current_user,
+#         profile_data=profile_data
+#     )
+#     return updated_user
 
 
 @router.post("/me/change_password", status_code=200)
@@ -53,12 +48,8 @@ async def route_change_password(
 async def route_grant_user_privileges(
     user_uuid: UUID4 = Path(..., title="UUID пользователя для изменения роли"),
     grant_data: UserGrantPrivileges = Body(...),
-    current_moderator: User = Depends(get_current_moderator)
+    current_admin: User = Depends(get_current_admin)
 ):
-    """
-    Назначает или изменяет роль указанному пользователю.
-    Требует прав модератора.
-    """
     updated_user = await grant_user(user_uuid=user_uuid, user_grant=grant_data)
     if not updated_user:
         raise HTTPException(status_code=404, detail="User not found or role update failed.")

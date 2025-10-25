@@ -31,3 +31,10 @@ DEFAULT_MODERATOR_PASSWORD = os.getenv("DEFAULT_MODERATOR_PASSWORD", default="pa
 LOGIN_URL = f"http://0.0.0.0:8080/login/access-token"
 
 MODE = os.getenv("MODE", default="DEBUG")
+
+ACCESS_TOKEN_EXPIRE_MINUTES = 60 * 24 * 14 # change in release to 15 minutes
+REFRESH_TOKEN_EXPIRE_MINUTES = 60 * 24 * 14 # 2 weeks
+
+REDIS_HOST = os.getenv("REDIS_HOST")
+REDIS_PORT = os.getenv("REDIS_PORT")
+REDIS_PASSWORD = os.getenv("REDIS_PASSWORD", "")
