@@ -111,3 +111,10 @@ class CreateObservations(BaseModel):
     dec_deg: float 
     altitude_deg: float 
     azimuth_deg: float 
+
+class GetObservations(BaseModel):
+    ra_deg: float 
+    dec_deg: float 
+    altitude_deg: float 
+    azimuth_deg: float 
+

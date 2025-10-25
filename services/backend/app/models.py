@@ -92,7 +92,7 @@ class Observatories(BaseModel):
     latitude = fields.FloatField(null=False)
     longitude = fields.FloatField(null=False)
     elevation_m = fields.FloatField(null=False)
-
+    
     class Meta:
         table = "Observatories"
 
@@ -129,8 +129,17 @@ class Observations(TimestampMixin, BaseModel):
     @classmethod
     async def create(cls, observ: CreateObservations) -> "Observations":
         observ_dict = observ.model_dump()
-        model = cls(**observ_dict, observation_time=date.today())
+        model = cls(**observ_dict)
         return model
+    
+    @classmethod
+    async def get_or_none(cls, observation_uuid: UUID4) -> Optional["Observations"]:
+        return await cls.get_or_none(uuid=observation_uuid)
+    
+    @classmethod
+    async def delete(cls, observation_uuid: UUID4) -> bool:
+        delete_count = cls.filter(uuid=observation_uuid).delete()
+        return delete_count
 
     class Meta:
         table = "Observations"
