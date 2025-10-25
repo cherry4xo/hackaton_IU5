@@ -7,7 +7,7 @@ from tortoise.models import Model
 from tortoise.exceptions import DoesNotExist
 
 
-class BaseModel(Model):
+class BaseModel(Model): 
     async def to_dict(self):
         d = {}
         for field in self._meta.db_fields:

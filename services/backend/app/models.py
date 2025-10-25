@@ -38,7 +38,6 @@ class User(TimestampMixin, BaseModel):
     email = fields.CharField(max_length=255, unique=True, null=True)
     password_hash = fields.CharField(max_length=255, null=True)
     registration_date = fields.DateField(auto_now_add=True)
-    telegram_id = fields.CharField(max_length=255, null=True)
     role = fields.CharEnumField(UserRole, default=UserRole.BOOKER, description="User role")
 
     @classmethod
@@ -81,152 +80,66 @@ class User(TimestampMixin, BaseModel):
     class Meta:
         table = "users"
 
-
-class Equipment(BaseModel):
+class Observatories(BaseModel):
     uuid = fields.UUIDField(pk=True)
-    name = fields.CharField(max_length=100, unique=True)
-    description = fields.TextField(null=True)
-
-    @classmethod
-    async def create(cls, equipment: CreateEquipment) -> "Equipment":
-        equipment_dict = equipment.model_dump()
-        equipment = cls(**equipment_dict)
-        await equipment.save()
-        return equipment
-
-    @classmethod
-    async def get_by_name(cls, name: str) -> Optional["Equipment"]:
-        try:
-            query = cls.get_or_none(name=name)
-            equipment = await query
-            return equipment
-        except DoesNotExist:
-            return None
-        
-    @classmethod
-    async def get_by_id(cls, uuid: str) -> Optional["Equipment"]:
-        try:
-            query = cls.get_or_none(uuid=uuid)
-            equipment = await query
-            return equipment
-        except DoesNotExist:
-            return None
-        
-    def __str__(self) -> str:
-        return self.name
-    
-    class Meta:
-        table = "equipment"
-
-
-class AvailabilitySlot(BaseModel):
-    uuid = fields.UUIDField(pk=True)
-    auditorium: fields.ForeignKeyRelation["Auditorium"] = fields.ForeignKeyField(
-        "models.Auditorium", related_name="availability_slots", on_delete=fields.CASCADE
-    )
-    day_of_week = fields.IntField(description="Day of the week (0=Monday, 6=Sunday)")
-    start_time = fields.TimeField(description="Start time of the slot")
-    end_time = fields.TimeField(description="End time of the slot")
-
-    @classmethod
-    async def create(cls, model: CreateAvailability) -> "AvailabilitySlot":
-        model_dict = model.model_dump()
-        availability = cls(**model_dict)
-        await availability.save()
-        return availability
-        
-    @classmethod
-    async def get_by_id(cls, uuid: str) -> Optional["AvailabilitySlot"]:
-        try:
-            query = cls.get_or_none(uuid=uuid)
-            equipment = await query
-            return equipment
-        except DoesNotExist:
-            return None
-        
-    @classmethod
-    async def get_by_auditorium(cls, auditorium: UUID4) -> Optional["AvailabilitySlot"]:
-        try:
-            query = cls.get_or_none(auditorium=auditorium)
-            equipment = await query
-            return equipment
-        except DoesNotExist:
-            return None
+    code = fields.CharField(max_length=16, null=False, unique=True)
+    name = fields.CharEnumField(max_length=128)
+    latitude = fields.FloatField(null=False)
+    longitude = fields.FloatField(null=False)
+    elevation_m = fields.FloatField(null=False)
 
     class Meta:
-        table = "availability_slots"
-        unique_together = (("auditorium", "day_of_week", "start_time"), ("auditorium", "day_of_week", "end_time"))
+        table = "Observatories"
 
-    def __str__(self):
-        days = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"]
-        return f"Aud. {self.auditorium_id}: {days[self.day_of_week]} {self.start_time}-{self.end_time}"
-
-
-class Auditorium(BaseModel):
-    uuid = fields.UUIDField(pk=True)
-    identifier = fields.CharField(max_length=100, unique=True)
-    capacity = fields.IntField()
-    desctiption = fields.TextField(null=True)
-    equipment: fields.ManyToManyRelation["Equipment"] = fields.ManyToManyField(
-        "models.Equipment", related_name="auditoriums_equipment", through="auditorium_equipment"
-    )
-
-    availability_schedule = fields.ReverseRelation["AvailabilitySlot"]
-    bookings: fields.ReverseRelation["Booking"]
-
-    @classmethod
-    async def create(cls, auditorium_model: CreateAuditorium) -> "Auditorium":
-        auditorium_dict = auditorium_model.model_dump()
-        auditorium = cls(**auditorium_dict)
-        await auditorium.save()
-        return auditorium
-
-    @classmethod
-    async def get_by_id(cls, uuid: str) -> Optional["Auditorium"]:
-        try:
-            query = cls.get_or_none(uuid=uuid)
-            auditorium = await query
-            return auditorium
-        except DoesNotExist:
-            return None
-
-    def __str__(self):
-        return self.identifier
+class Comets(TimestampMixin, BaseModel):
+    uuid =  fields.UUIDField(pk = True)
+    designation = fields.CharField(null=False, unique=True, max_length=50) #????????????????????????????????
+    name = fields.CharField()
+    discovered_by: fields.ForeignKeyRelation["User"] = fields.ForeignKeyField("models.User", related_name="discovers", on_delete=fields.CASCADE, null=False)
+    discovery_date = fields.DatetimeField(null=False) 
 
     class Meta:
-        table = "auditoriums"
+        table = "Comets"
 
-
-class Booking(BaseModel):
+class Observations(TimestampMixin, BaseModel):
     uuid = fields.UUIDField(pk=True)
-    broker: fields.ForeignKeyRelation["User"] = fields.ForeignKeyField(
-        "models.User", related_name="bookings", on_delete=fields.CASCADE
-    )
-    auditorium: fields.ForeignKeyRelation["Auditorium"] = fields.ForeignKeyField(
-        "models.Auditorium", related_name="bookings", on_delete=fields.CASCADE
-    )
-    start_time = fields.DatetimeField()
-    end_time = fields.DatetimeField()
-    title = fields.CharField(max_length=200, null=True, blank=True)
-
-    def __str__(self):
-        return f"Booking {self.id}: Aud. {self.auditorium_id} by User {self.booker_id} ({self.start_time} - {self.end_time})"
+    comet_id: fields.ForeignKeyRelation["Comets"] = fields.ForeignKeyField("models.Comets", related_name="comets", on_delete=fields.CASCADE, null=False)
+    observatory_id: fields.ForeignKeyRelation["Observatories"] = fields.ForeignKeyField("models.Observatories", related_name="observatories", on_delete=fields.CASCADE, null=False)
+    observer_id: fields.ForeignKeyRelation["User"] = fields.ForeignKeyField("models.User", related_name="obsevres", on_delete = fields.CASCADE, null=False)
+    observation_time = fields.DatetimeField(null=False)
+    # Параметры 
+    ra_deg = fields.FloatField(null=False)
+    dec_deg = fields.FloatField(null=False)
+    altitude_deg = fields.FloatField(null=False)
+    azimuth_deg = fields.FloatField(null=False)
+    processed = fields.BooleanField(default=False)
 
     class Meta:
-        table = "bookings"
-    
-    @classmethod
-    async def create(cls, booking_model: CreateBooking, user: User) -> "Booking":
-        booking_dict = booking_model.model_dump()
-        booking = cls(**booking_dict, broker=user.uuid)
-        await booking.save()
-        return booking
+        table = "Observations"
 
-    @classmethod
-    async def get_by_id(cls, uuid: str) -> Optional["Booking"]:
-        try:
-            query = cls.get_or_none(uuid=uuid)
-            booking = await query
-            return booking
-        except DoesNotExist:
-            return None
+class Orbits(TimestampMixin, BaseModel):
+    uuid = fields.UUIDField(pk=True)
+    comet_id: fields.ForeignKeyRelation["Comets"] = fields.ForeignKeyField("models.Comets", related_name="comets", on_delete=fields.CASCADE, null=False)
+    semi_major_axis = fields.FloatField()
+    eccentricity = fields.FloatField()
+    inclination = fields.FloatField() 
+    longitude_ascending_node = fields.FloatField()
+    argument_periapsis = fields.FloatField()
+    periapsis_time = fields.DatetimeField()
+    epoch TIMESTAMP = fields.DatetimeField()
+    method = fields.CharField(default="gauss", max_length=20)
+    is_hyperbolic = fields.BooleanField()
+
+    class Meta:
+        table = "Orbits"
+
+class Close_approaches(TimestampMixin, BaseModel):
+    uuid = fields.UUIDField(pk=True)
+    comet_id: fields.ForeignKeyRelation["Comets"] = fields.ForeignKeyField("models.Comets", related_name="comets", on_delete=fields.CASCADE, null=False)
+    approach_time = fields.DatetimeField(null=False)
+    distance_au = fields.FloatField(null=True)
+    distance_km = fields.FloatField(null=False)
+    orbit_id: fields.ForeignKeyRelation["Orbits"] = fields.ForeignKeyField("models.Orbits", related_name="orbits", on_delete=fields.CASCADE, null=False)
+
+    class Meta:
+        table = "Close_approaches"
