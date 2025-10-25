@@ -2,6 +2,8 @@ import logging
 import asyncio
 import json
 from datetime import datetime
+
+from fastapi import FastAPI
 from app.utils.redis_client import redis_client
 from app.db import init
 from app.calculator import process_task
@@ -13,8 +15,10 @@ logger = logging.getLogger(__name__)
 async def run_worker():
     logging.info("Started Calculation Service")
 
+    app = FastAPI()
+
     # Инициализация БД
-    await init()
+    await init(app)
 
     while True:
         try:

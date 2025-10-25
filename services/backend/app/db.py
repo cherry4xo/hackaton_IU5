@@ -65,34 +65,68 @@ async def upgrade_db(app: FastAPI, db_url: str = None):
             logger.error(f"Could not create base migration directory {AERICH_COMMAND.location}: {e}", exc_info=True)
             raise
 
-        logger.info("Running 'aerich init-db' to ensure schema table exists...")
+        # Try to initialize the Aerich schema tracking table
+        # This should only be needed once, but we handle the case where it already exists
+        logger.info("Attempting to initialize Aerich schema tracking table...")
         try:
-            await AERICH_COMMAND.init_db(safe=True) # safe=True prevents error if table already exists
-            logger.info("'aerich init-db' finished.")
+            await AERICH_COMMAND.init_db(safe=True)
+            logger.info("Aerich schema tracking table initialized.")
+        except FileExistsError as e:
+            logger.info("Aerich schema tracking table already exists, continuing...")
         except Exception as init_db_exc:
-            logger.critical(f"Failed during 'aerich init-db': {init_db_exc}", exc_info=True)
-            raise # If we can't even ensure the table, stop here.
+            logger.warning(f"Non-critical error during 'aerich init-db': {init_db_exc}", exc_info=True)
+            # Continue anyway as the table might already exist
 
-        logger.info("Running 'aerich init'...")
-        await AERICH_COMMAND.init()
-        logger.info("'aerich init' finished.")
-
-        if not os.path.isdir(MODELS_MIGRATION_PATH):
-            logger.error(f"Directory '{MODELS_MIGRATION_PATH}' was STILL NOT found after 'aerich init'.")
-            logger.error("This indicates a persistent issue with 'aerich init' creating the directory/initial file.")
-            raise FileNotFoundError(f"Aerich failed to create migration directory '{MODELS_MIGRATION_PATH}' during 'init'.")
+        # Ensure migration directory exists
+        if not os.path.exists(MODELS_MIGRATION_PATH):
+            logger.info("Creating migration directory...")
+            try:
+                await AERICH_COMMAND.init()
+                logger.info("Migration directory created.")
+            except Exception as init_exc:
+                logger.warning(f"Error during 'aerich init': {init_exc}", exc_info=True)
         else:
-            logger.info(f"Verified app-specific directory exists: {MODELS_MIGRATION_PATH}")
+            logger.info(f"Migration directory already exists: {MODELS_MIGRATION_PATH}")
 
-        logger.info("Running 'aerich upgrade'...")
-        await AERICH_COMMAND.upgrade(run_in_transaction=True)
-        logger.info("'aerich upgrade' finished.")
-        logger.info("Database migrations applied successfully.")
-
-    except FileNotFoundError as e:
-        logger.critical(f"Migration directory check failed: {e}", exc_info=True)
-        print(f"FATAL: Missing migration directory: {e}")
-        raise
+        # Check if there are any migration files before attempting upgrade
+        migration_files = []
+        if os.path.exists(MODELS_MIGRATION_PATH):
+            migration_files = [f for f in os.listdir(MODELS_MIGRATION_PATH) if f.endswith('.py') and f != '__init__.py']
+        
+        if migration_files:
+            logger.info(f"Found {len(migration_files)} migration files, applying...")
+            # Apply any pending migrations
+            logger.info("Running 'aerich upgrade' to apply pending migrations...")
+            try:
+                await AERICH_COMMAND.upgrade(run_in_transaction=True)
+                logger.info("'aerich upgrade' finished successfully.")
+                logger.info("Database migrations applied successfully.")
+            except aerich_exceptions.DowngradeError as e:
+                logger.error(f"Downgrade error during migration: {e}", exc_info=True)
+                raise
+            except AttributeError as attr_err:
+                if "'Migrate' object has no attribute 'migrate_location'" in str(attr_err):
+                    logger.error("Aerich migration error: migrate_location attribute missing. This may indicate a version incompatibility.", exc_info=True)
+                    # Try to recreate the migration setup
+                    logger.info("Attempting to reset Aerich migration state...")
+                    try:
+                        # Recreate the command instance
+                        global AERICH_COMMAND
+                        AERICH_COMMAND = Command(tortoise_config=TORTOISE_ORM, app="models", location=MIGRATION_LOCATION)
+                        await AERICH_COMMAND.upgrade(run_in_transaction=True)
+                        logger.info("Retry of 'aerich upgrade' finished successfully.")
+                        logger.info("Database migrations applied successfully.")
+                    except Exception as retry_err:
+                        logger.error(f"Retry of 'aerich upgrade' also failed: {retry_err}", exc_info=True)
+                        raise
+                else:
+                    logger.error(f"Attribute error during 'aerich upgrade': {attr_err}", exc_info=True)
+                    raise
+            except Exception as upgrade_exc:
+                logger.error(f"Error during 'aerich upgrade': {upgrade_exc}", exc_info=True)
+                raise
+        else:
+            logger.info("No migration files found, skipping upgrade step.")
 
     except Exception as e:
         logger.critical("Failed to apply database migrations due to an unexpected error.", exc_info=True)

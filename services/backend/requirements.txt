@@ -1,4 +1,4 @@
-aerich
+aerich==0.7.2
 fastapi
 tortoise-orm
 tortoise-orm[asyncpg]
