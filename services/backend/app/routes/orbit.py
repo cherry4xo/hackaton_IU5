@@ -278,12 +278,14 @@ async def calculate_closest_approach(
             detail="Orbit not found"
         )
     
+    comet = await orbit.comet
+    
     # Create a new task for closest approach calculation
     task_id = str(uuid.uuid4())
     task = await CalculationTask.create(
         uuid=task_id,
         user=user,
-        comet=orbit.comet,
+        comet=comet,
         orbit=orbit,
         status=CalculationTaskStatus.PROCESSING,
         location_code=request.options.get('location_code', '500'),
