@@ -222,3 +222,6 @@
 .calculate-button:hover:not(.disabled) {
   background-color: #7b24ca;
 }
+.comet-name-input {
+  margin-top: 24px;
+}

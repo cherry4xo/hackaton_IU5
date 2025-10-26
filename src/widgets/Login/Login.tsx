@@ -3,6 +3,9 @@ import React, { useState } from 'react';
 import './Login.css';
 import { Button } from '../../shared/ui/Button';
 import { Input } from '../../shared/ui/Input';
+import { login as apiLogin, getMe as apiGetMe } from '../../shared/api/auth';
+// --- ИСПРАВЛЕНИЕ №2: Импортируем хук useAuth ---
+import { useAuth } from '../../app/providers/AuthProvider';
 
 interface LoginProps {
   onClose: () => void;
@@ -10,14 +13,24 @@ interface LoginProps {
 }
 
 export const Login: React.FC<LoginProps> = ({ onClose, onShowRegister }) => {
-  const [login, setLogin] = useState('');
+  // --- ИСПРАВЛЕНИЕ №3: Получаем setUser из контекста ---
+  const { setUser } = useAuth();
+  const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  
+  // Состояния для ошибок и загрузки
   const [errors, setErrors] = useState<{ [key: string]: string }>({});
+  const [formError, setFormError] = useState<string | null>(null);
+  const [isLoading, setIsLoading] = useState(false);
+
+  // ИЗМЕНЕНИЕ 2: Обновлена логика валидации для почты
   const validate = (): boolean => {
     const newErrors: { [key: string]: string } = {};
     
-    if (!login.trim()) {
-      newErrors.login = 'Логин не может быть пустым';
+    if (!email.trim()) {
+      newErrors.email = 'Почта не может быть пустой';
+    } else if (!/\S+@\S+\.\S+/.test(email)) {
+      newErrors.email = 'Некорректный формат почты';
     }
     if (!password) {
       newErrors.password = 'Пароль не может быть пустым';
@@ -27,19 +40,47 @@ export const Login: React.FC<LoginProps> = ({ onClose, onShowRegister }) => {
     return Object.keys(newErrors).length === 0;
   };
 
-  const handleLogin = (event: React.FormEvent) => {
-    event.preventDefault();
-    if (!validate()) {
-      return;
-    }
-    setErrors({});
-    console.log('Logging in with:', { login, password });
-  };
+  // ИЗМЕНЕНИЕ 3: Обновлена функция отправки, теперь она работает с бэкендом
+ // ЗАМЕНИТЕ ВАШУ ФУНКЦИЮ НА ЭТУ:
 
-  const handleOverlayClick = (event: React.MouseEvent<HTMLDivElement>) => {
-    if (event.target === event.currentTarget) {
+  const handleLogin = async (event: React.FormEvent) => {
+    event.preventDefault();
+    if (!validate()) return;
+    
+    setIsLoading(true);
+    setFormError(null);
+
+    // --- НАЧАЛО РАБОЧЕГО БЛОКА ---
+    // Этот код теперь будет отправлять реальный запрос на сервер
+    try {
+      // 1. Отправляем запрос на получение токена, используя email как username
+      const tokenData = await apiLogin({ username: email, password });
+      
+      console.log('Успешный вход');
+      
+      // 2. Сохраняем токен в localStorage, чтобы он был доступен после перезагрузки
+      localStorage.setItem('accessToken', tokenData.access_token);
+      
+      // 3. Получаем данные пользователя с помощью нового токена
+      const userData = await apiGetMe(tokenData.access_token);
+      
+      // 4. Сохраняем пользователя в глобальном состоянии (контексте)
+      setUser(userData);
+
+      // 5. Закрываем модальное окно после успешного входа
       onClose();
+
+    } catch (err: any) {
+      console.error('Ошибка входа:', err);
+      // Показываем пользователю ошибку, которую вернул бэкенд
+      setFormError(err.detail || err.message || 'Неверная почта или пароль');
+    } finally {
+      setIsLoading(false); // Выключаем загрузку в любом случае
     }
+    // --- КОНЕЦ РАБОЧЕГО БЛОКА ---
+  };
+  const handleOverlayClick = (event: React.MouseEvent<HTMLDivElement>) => {
+    if (event.target === event.currentTarget) onClose();
   };
 
   return (
@@ -49,13 +90,14 @@ export const Login: React.FC<LoginProps> = ({ onClose, onShowRegister }) => {
         <h2 className="login-title">Вход</h2>
         
         <form onSubmit={handleLogin} className="login-form" noValidate> 
+          {/* ИЗМЕНЕНИЕ 4: Заменены тексты и привязки для поля почты */}
           <Input
-            label="Логин"
-            type="text"
-            placeholder="Введите логин"
-            value={login}
-            onChange={(e) => setLogin(e.target.value)}
-            error={errors.login}
+            label="Почта"
+            type="email"
+            placeholder="Введите почту"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            error={errors.email}
           />
           <div className="password-container">
             <Input
@@ -68,8 +110,12 @@ export const Login: React.FC<LoginProps> = ({ onClose, onShowRegister }) => {
             />
             <a href="#" className="forgot-password-link">Забыли пароль?</a>
           </div>
-          <Button type="submit" size="lg" className="login-button">
-            Войти
+          
+          {/* Отображение общей ошибки от сервера */}
+          {formError && <div className="form-error-message">{formError}</div>}
+
+          <Button type="submit" size="lg" className="login-button" disabled={isLoading} loading={isLoading}>
+            {isLoading ? 'Вход...' : 'Войти'}
           </Button>
         </form>
         
