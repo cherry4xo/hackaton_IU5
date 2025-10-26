@@ -138,7 +138,7 @@ async def get_task_status(
         )
     
     # Check if user has access to this task
-    if task.user_id != user.id:
+    if task.user != user:
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="Not authorized to access this task"
