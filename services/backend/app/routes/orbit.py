@@ -285,7 +285,7 @@ async def calculate_closest_approach(
         user=user,
         comet=orbit.comet,
         orbit=orbit,
-        status=CalculationTaskStatus.PENDING,
+        status=CalculationTaskStatus.PROCESSING,
         location_code=request.options.get('location_code', '500'),
     )
 
