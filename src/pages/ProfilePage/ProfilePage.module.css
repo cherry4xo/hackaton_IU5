@@ -1,0 +1,5 @@
+.pageWrapper {
+    background-color: #1E1E1E;
+    min-height: 100vh;
+    padding-top: 35px; /* Отступ от хедера */
+  }

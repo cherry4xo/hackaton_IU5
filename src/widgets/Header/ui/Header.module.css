@@ -1,47 +1,84 @@
 .header {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
+  background-color: #000;
+  padding: 20px 40px;
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 20px 40px;
-  background-color: rgba(0, 0, 0);
-  z-index: 100;
   border-bottom: 1px solid rgba(255, 255, 255, 0.1);
 }
 
 .logo {
   font-size: 24px;
-  font-weight: 500;
-  letter-spacing: 1px;
+  font-weight: 700;
+  color: white;
 }
 
-.navigation a {
-  color: #e0e0e0;
+.logo a {
+  color: white;
   text-decoration: none;
-  margin: 0 20px;
+  transition: color 0.2s;
+}
+
+.logo a:hover {
+  color: #5C49FF;
+}
+
+.nav {
+  display: flex;
+  gap: 40px;
+  align-items: center;
+}
+
+.navLink {
+  color: rgba(255, 255, 255, 0.7);
+  text-decoration: none;
   font-size: 16px;
-  transition: color 0.3s;
+  font-weight: 500;
+  transition: color 0.2s;
+  padding: 8px 16px;
+  border-radius: 8px;
 }
 
-.navigation a:hover {
-  color: #ffffff;
+.navLink:hover {
+  color: white;
+  background-color: rgba(92, 73, 255, 0.1);
 }
 
-.userActions {
+.navLink.active {
+  color: #5C49FF;
+  background-color: rgba(92, 73, 255, 0.2);
+}
+
+.userSection {
   display: flex;
   align-items: center;
-  gap: 20px;
 }
 
-.icon {
-  cursor: pointer;
-  color: #e0e0e0;
-  transition: color 0.3s;
+.userIcon {
+  color: rgba(255, 255, 255, 0.7);
+  padding: 8px;
+  border-radius: 8px;
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
-.icon:hover {
-  color: #ffffff;
+.userIcon:hover {
+  color: white;
+  background-color: rgba(92, 73, 255, 0.1);
+  transform: scale(1.05);
+}
+
+/* Адаптивность */
+@media (max-width: 768px) {
+  .header {
+    padding: 15px 20px;
+    flex-direction: column;
+    gap: 15px;
+  }
+  
+  .nav {
+    gap: 20px;
+  }
 }

@@ -1,0 +1,30 @@
+.breadcrumbs {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 14px;
+  }
+  
+  .breadcrumbItem {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  
+  .breadcrumbLink {
+    color: #5C49FF;
+    text-decoration: none;
+    transition: color 0.2s;
+  }
+  
+  .breadcrumbLink:hover {
+    color: #6d5cff;
+  }
+  
+  .breadcrumbCurrent {
+    color: rgba(255, 255, 255, 0.7);
+  }
+  
+  .separator {
+    color: rgba(255, 255, 255, 0.5);
+  }

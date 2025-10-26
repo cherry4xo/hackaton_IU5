@@ -3,6 +3,7 @@ import { Routes, Route } from 'react-router-dom';
 import { MainLayout } from '../widgets/MainLayout/ui/MainLayout';
 import HomePage from '../pages/HomePage';
 import CalculatePage from '../pages/CalculatePage';
+import ResultsPage from '../pages/ResultsPage'; // ИМПОРТ НОВОЙ СТРАНИЦЫ
 
 function App() {
   return (
@@ -10,6 +11,7 @@ function App() {
       <Route path="/" element={<MainLayout />}>
         <Route index element={<HomePage />} />
         <Route path="calculate" element={<CalculatePage />} />
+        <Route path="results" element={<ResultsPage />} /> {/* НОВЫЙ МАРШРУТ */}
       </Route>
     </Routes>
   );

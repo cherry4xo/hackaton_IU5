@@ -1,4 +1,4 @@
-
+import { useNavigate } from 'react-router-dom';
 import React, { useState, useRef, useEffect } from 'react';
 import './InputResearch.css';
 import { Button } from '../../../shared/ui/Button';
@@ -20,6 +20,7 @@ const generateInitialRows = (): Observation[] => {
 };
 
 export const InputResearch: React.FC = () => {
+  const navigate = useNavigate();
   const [observations, setObservations] = useState<Observation[]>(generateInitialRows());
   const [files, setFiles] = useState<File[]>([]);
   const [previews, setPreviews] = useState<string[]>([]);
@@ -57,8 +58,9 @@ export const InputResearch: React.FC = () => {
   };
   
   const handleCalculate = () => {
-      console.log("Введенные наблюдения:", observations);
-      console.log("Загруженные файлы:", files);
+    console.log("Введенные наблюдения:", observations);
+    console.log("Загруженные файлы:", files);
+    navigate('/results'); // ПЕРЕХОД НА СТРАНИЦУ РЕЗУЛЬТАТОВ
   };
   return (
     <div className="research-container">

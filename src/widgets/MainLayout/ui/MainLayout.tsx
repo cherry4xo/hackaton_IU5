@@ -1,6 +1,6 @@
 import React from 'react';
 import { Outlet } from 'react-router-dom';
-import Header from '../../../widgets/Header/ui/Header';
+import { Header } from '../../../widgets/Header/ui/Header';
 import Footer from '../../../widgets/Footer/ui/Footer';
 import styles from './MainLayout.module.css';
 
