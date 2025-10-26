@@ -92,6 +92,7 @@ class Observatories(BaseModel):
 class Comets(TimestampMixin, BaseModel):
     uuid = fields.UUIDField(pk = True)
     designation = fields.CharField(null=False, unique=True, max_length=50)
+    name = fields.CharField(null=True, max_length=100)
     discovered_by: fields.ForeignKeyRelation["User"] = fields.ForeignKeyField("models.User", related_name="discovers", on_delete=fields.CASCADE, null=False)
     discovery_date = fields.DatetimeField(null=False) 
 

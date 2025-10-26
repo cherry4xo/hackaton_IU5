@@ -98,6 +98,7 @@ async def calculate_orbit(
         if not comet:
             comet = await Comets.create(
                 designation=comet_name, 
+                name=comet_name,
                 discovered_by=user,
                 discovery_date=datetime.now(),
             )
