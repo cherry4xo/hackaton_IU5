@@ -278,13 +278,6 @@ async def calculate_closest_approach(
             detail="Orbit not found"
         )
     
-    # Check if user has access to this orbit
-    if orbit.comet.discovered_by_id != user.id:
-        raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN,
-            detail="Not authorized to access this orbit"
-        )
-    
     # Create a new task for closest approach calculation
     task_id = str(uuid.uuid4())
     task = await CalculationTask.create(
