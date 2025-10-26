@@ -1,10 +1,11 @@
 // src/widgets/InputResearch/ui/InputResearch.tsx
 
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef } from 'react';
+import { useNavigate } from 'react-router-dom';
 import './InputResearch.css';
 import { Button } from '../../../shared/ui/Button';
 import { Input } from '../../../shared/ui/Input';
-import { uploadImage, calculateOrbit } from '../../../shared/api/calculate';
+import { calculateOrbit } from '../../../shared/api/calculate';
 
 // 1. ТИПЫ ДАННЫХ
 interface Observation {
@@ -27,20 +28,17 @@ const generateInitialRows = (): Observation[] => {
 
 // 3. ОСНОВНОЙ КОМПОНЕНТ
 export const InputResearch: React.FC = () => {
+  const navigate = useNavigate();
+  
   // --- СОСТОЯНИЕ КОМПОНЕНТА ---
   const [observations, setObservations] = useState<Observation[]>(generateInitialRows());
-  const [files, setFiles] = useState<File[]>([]);
-  const [previews, setPreviews] = useState<string[]>([]);
+  const [imageBase64, setImageBase64] = useState<string | null>(null);
+  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const [cometName, setCometName] = useState<string>('');
   const [fieldErrors, setFieldErrors] = useState<FieldErrors>({});
   const [formError, setFormError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
-
-  // --- ЭФФЕКТЫ ---
-  useEffect(() => {
-    return () => { previews.forEach(url => URL.revokeObjectURL(url)); };
-  }, [previews]);
 
   // --- ОБРАБОТЧИКИ СОБЫТИЙ ---
   const handleAddRow = () => {
@@ -75,26 +73,31 @@ export const InputResearch: React.FC = () => {
   };
   
   const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    if (event.target.files) {
-      const newFiles = Array.from(event.target.files);
-      const newPreviews = newFiles.map(file => URL.createObjectURL(file));
-      
-      setFiles(prev => [...prev, ...newFiles]);
-      setPreviews(prev => [...prev, ...newPreviews]);
+    const file = event.target.files?.[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onload = () => {
+        const result = reader.result as string;
+        setPreviewUrl(result);
+        setImageBase64(result.split(',')[1]);
+      };
+      reader.readAsDataURL(file);
+    } else {
+      setPreviewUrl(null);
+      setImageBase64(null);
     }
   };
-
+  
   // --- ФУНКЦИЯ ВАЛИДАЦИИ И ОТПРАВКИ ---
   const handleCalculate = async () => {
+    // Валидация
     if (observations.length < 5) {
       setFormError('Необходимо как минимум 5 строк наблюдений.');
       setFieldErrors({});
       return;
     }
-
     const newErrors: FieldErrors = {};
     let hasError = false;
-
     observations.forEach(obs => {
       if (!obs.time) { newErrors[`${obs.id}-time`] = 'Заполните'; hasError = true; }
       if (!obs.ra.trim()) { newErrors[`${obs.id}-ra`] = 'Заполните'; hasError = true; }
@@ -102,37 +105,35 @@ export const InputResearch: React.FC = () => {
       if (!obs.dec.trim()) { newErrors[`${obs.id}-dec`] = 'Заполните'; hasError = true; }
       else if (isNaN(parseFloat(obs.dec))) { newErrors[`${obs.id}-dec`] = 'Неверный формат'; hasError = true; }
     });
-    
-    if (!cometName.trim()) {
-      newErrors['cometName'] = 'Это поле обязательно';
-      hasError = true;
-    }
-    
+    if (!cometName.trim()) { newErrors['cometName'] = 'Это поле обязательно'; hasError = true; }
     setFieldErrors(newErrors);
-    if (hasError) {
-      setFormError(null);
-      return;
-    }
+    if (hasError) { setFormError(null); return; }
     
+    // Подготовка и отправка
     setFormError(null);
     setFieldErrors({});
     setIsLoading(true);
 
-    // Раскомментируйте, когда бэкенд будет готов
-    /*
     try {
-      const imageUploadPromises = files.map(file => uploadImage(file));
-      const imageIds = await Promise.all(imageUploadPromises);
-      
-      const observationsData = observations.map(({ id, ...rest }) => rest);
-      
+      // Подготовка данных для бэкенда
+      const backendObservations = observations.map(obs => ({
+        observation_time: new Date(obs.time).toISOString(),
+        ra: parseFloat(obs.ra),
+        dec: parseFloat(obs.dec),
+      }));
+
+      // Отправка запроса
       const result = await calculateOrbit({
-        observations: observationsData,
-        cometName: cometName.trim(),
-        imageIds: imageIds,
+        observations: backendObservations,
+        image_reference: imageBase64,
+        comet_uuid: cometName.trim(),
       });
       
-      console.log('Расчет успешен:', result);
+      console.log('Расчет успешно запущен! ID задачи:', result.task_id);
+      
+      // Перенаправление на страницу результатов
+      navigate(`/results/${result.task_id}`);
+
     } catch (error) {
       console.error('Ошибка при расчете:', error);
       if (error instanceof Error) {
@@ -143,8 +144,6 @@ export const InputResearch: React.FC = () => {
     } finally {
       setIsLoading(false);
     }
-    */
-    setIsLoading(false);
   };
   
   // --- РЕНДЕРИНГ КОМПОНЕНТА (JSX) ---
@@ -210,17 +209,14 @@ export const InputResearch: React.FC = () => {
         <div className="file-upload-section">
           <input
             type="file"
-            multiple
-            accept="image/*,.fits,.fit"
+            accept="image/*"
             ref={fileInputRef}
             onChange={handleFileChange}
             style={{ display: 'none' }}
           />
-          {previews.length > 0 ? (
+          {previewUrl ? (
             <div className="image-preview-container">
-              {previews.map((src, index) => (
-                <img key={index} src={src} alt={`preview ${index}`} className="image-preview" />
-              ))}
+              <img src={previewUrl} alt="Превью" className="image-preview" />
             </div>
           ) : (
             <div className="file-drop-zone" onClick={() => fileInputRef.current?.click()}>
@@ -229,13 +225,13 @@ export const InputResearch: React.FC = () => {
                   <path 
                     d="M30.4997 12.5V47.5M12.708 30H48.2913" 
                     stroke="#B3B3B3" 
-                    strokeWidth="4"      // Атрибут исправлен
-                    strokeLinecap="round" // Атрибут исправлен
-                    strokeLinejoin="round"  // Атрибут исправлен
+                    strokeWidth="4"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
                   />
                 </svg>
               </span>
-              <span className="upload-text">Загрузите медиафайлы</span>
+              <span className="upload-text">Загрузите медиафайл</span>
             </div>
           )}
           <Input

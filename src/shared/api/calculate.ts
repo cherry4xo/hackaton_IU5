@@ -1,10 +1,20 @@
+// src/shared/api/calculate.ts
+
 import { BASE_URL, checkResponse } from './config';
 
-interface ObservationData { time: string; ra: string; dec: string; }
+// Тип для данных наблюдений, как их ожидает бэкенд
+interface BackendObservation {
+    observation_time: string;
+    ra: number;
+    dec: number;
+}
 
-// Функция-помощник для запросов, требующих токен
+// 1. ФУНКЦИЯ-ПОМОЩНИК для авторизованных запросов
 const fetchWithAuth = (url: string, options: RequestInit = {}) => {
   const token = localStorage.getItem('accessToken');
+  if (!token) {
+    return Promise.reject(new Error('Пользователь не авторизован'));
+  }
   const headers = {
     ...options.headers,
     'Authorization': `Bearer ${token}`,
@@ -12,26 +22,53 @@ const fetchWithAuth = (url: string, options: RequestInit = {}) => {
   return fetch(url, { ...options, headers }).then(checkResponse);
 };
 
-// Запрос на ЗАГРУЗКУ ИЗОБРАЖЕНИЯ (теперь требует токен)
-export const uploadImage = (file: File) => {
-  const formData = new FormData();
-  formData.append('file', file);
 
-  return fetchWithAuth(`${BASE_URL}/orbit/upload-image`, {
+// 2. ЗАПРОС НА РАСЧЕТ ОРБИТЫ
+// POST /orbit/calculate
+export const calculateOrbit = (data: {
+  observations: BackendObservation[];
+  image_reference: string | null;
+  comet_uuid?: string | null; // <-- Указываем, что это поле необязательное
+}) => {
+  const url = new URL(`${BASE_URL}/orbit/calculate`);
+  
+  // --- ИЗМЕНЕНИЕ: Добавляем параметр в URL, ТОЛЬКО ЕСЛИ он был передан ---
+  if (data.comet_uuid) {
+    url.searchParams.append('comet_uuid', data.comet_uuid);
+  }
+
+  const requestBody = {
+    observations: data.observations,
+    image_reference: data.image_reference || "",
+    options: {},
+  };
+
+  return fetchWithAuth(url.toString(), {
     method: 'POST',
-    body: formData,
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify(requestBody),
   });
 };
 
-// Запрос на РАСЧЕТ ОРБИТЫ (теперь требует токен)
-export const calculateOrbit = (data: {
-  observations: ObservationData[];
-  cometName: string;
-  imageIds: string[];
+
+// --- НОВАЯ ФУНКЦИЯ ---
+// 3. ЗАПРОС НА РАСЧЕТ СБЛИЖЕНИЯ
+// POST /orbit/calculate-closest-approach
+export const calculateClosestApproach = (data: {
+  orbit_id: string;
 }) => {
-  return fetchWithAuth(`${BASE_URL}/orbit/calculate`, { // <-- Замените на реальный URL, когда он будет
+  const requestBody = {
+    orbit_id: data.orbit_id,
+    options: {}, // Отправляем пустой объект, как в документации
+  };
+
+  return fetchWithAuth(`${BASE_URL}/orbit/calculate-closest-approach`, {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(data),
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify(requestBody),
   });
 };
