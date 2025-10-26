@@ -14,7 +14,7 @@ class OrbitCalculationRequest(BaseModel):
     options: Optional[dict] = {}
 
 class ClosestApproachRequest(BaseModel):
-    orbit_id: UUID4
+    task_id: UUID4
     options: Optional[dict] = {}
 
 class TaskResponse(BaseModel):

@@ -272,28 +272,37 @@ async def calculate_closest_approach(
     request: ClosestApproachRequest,
     user: User = Depends(get_current_user),
 ):
-    # Find the orbit
-    orbit = await Orbits.get_or_none(uuid=request.orbit_id)
-    if not orbit:
+    task = await CalculationTask.get_or_none(uuid=request.task_id).select_related('orbit', 'comet', 'user')
+    if not task:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
-            detail="Orbit not found"
+            detail="Task not found"
         )
     
-    comet = await orbit.comet
+    if task.user_id != user.uuid:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Not authorized to access this task"
+        )
+    
+    if not task.orbit:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Orbit is not calculated yet. Please complete orbit calculation first."
+        )
+    
+    if task.close_approach_id:
+        return TaskResponse(
+            task_id=task.uuid,
+            status=task.status,
+            submitted_at=task.created_at
+        )
+    
+    task.status = CalculationTaskStatus.PROCESSING
+    await task.save()
     
     # Create a new task for closest approach calculation
-    task_id = str(uuid.uuid4())
-    task = await CalculationTask.create(
-        uuid=task_id,
-        user=user,
-        comet=comet,
-        orbit=orbit,
-        status=CalculationTaskStatus.PROCESSING,
-        location_code=request.options.get('location_code', '500'),
-    )
-
-    # Prepare orbit elements for calculation
+    orbit = task.orbit
     orbit_elements = {
         "semi_major_axis": orbit.semi_major_axis,
         "eccentricity": orbit.eccentricity,
@@ -303,9 +312,8 @@ async def calculate_closest_approach(
         "periapsis_time": orbit.periapsis_time
     }
 
-    # Send closest approach calculation task to queue
     success = await send_closest_approach_task(
-        task_id,
+        str(task.uuid),
         str(user.uuid),
         orbit_elements,
         request.options
@@ -317,7 +325,7 @@ async def calculate_closest_approach(
         await task.save()
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail='Failed to send task to queue'
+            detail="Failed to send task to queue"
         )
     
     return TaskResponse(
