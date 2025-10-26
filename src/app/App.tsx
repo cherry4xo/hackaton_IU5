@@ -20,6 +20,11 @@ function App() {
         <Route path="projects" element={<ProjectsPage />} />
         <Route path="library" element={<LibraryPage />} />
         <Route path="login" element={<LoginPage />} /> {/* Добавляем маршрут */}
+        
+        {/* --- 2. ДОБАВЬТЕ ЭТОТ МАРШРУТ --- */}
+        {/* :taskId - это динамический параметр, который мы будем получать из URL */}
+        <Route path="results/:taskId" element={<ResultsPage />} />
+        
       </Route>
     </Routes>
   );

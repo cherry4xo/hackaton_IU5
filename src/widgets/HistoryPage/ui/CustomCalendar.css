@@ -2,91 +2,91 @@
 
 /* Главный контейнер календаря */
 .custom-calendar .react-datepicker {
-    font-family: 'Inter', sans-serif;
-    background-color: #1e1e20;
-    border: 1px solid #3a3a3c;
-    border-radius: 12px;
-  }
-  
-  /* Шапка календаря (месяц и стрелки) */
-  .custom-calendar .react-datepicker__header {
-    background-color: #1e1e20;
-    border-bottom: 1px solid #3a3a3c;
-  }
-  
-  /* Текст в шапке (месяц, год) */
-  .custom-calendar .react-datepicker__current-month,
-  .custom-calendar .react-datepicker-time__header,
-  .custom-calendar .react-datepicker-year-header {
-    color: #ffffff;
-    font-weight: 500;
-  }
-  
-  /* Стрелки навигации по месяцам */
-  .custom-calendar .react-datepicker__navigation-icon::before {
-    border-color: #ffffff;
-  }
-  
-  /* Названия дней недели (Пн, Вт...) */
-  .custom-calendar .react-datepicker__day-name {
-    color: #8e8e93;
-  }
-  
-  /* Стили для всех дней в календаре */
-  .custom-calendar .react-datepicker__day {
-    color: #ffffff;
-    transition: background-color 0.2s ease, color 0.2s ease;
-  }
-  
-  /* Эффект при наведении на день */
-  .custom-calendar .react-datepicker__day:hover {
-    background-color: #3a3a3c;
-    border-radius: 50%;
-  }
-  
-  /* Выбранный день или дни в диапазоне */
-  .custom-calendar .react-datepicker__day--selected,
-  .custom-calendar .react-datepicker__day--in-selecting-range,
-  .custom-calendar .react-datepicker__day--in-range {
-    background-color: #4a5cff;
-    color: #ffffff;
-    border-radius: 50%;
-  }
-  
-  /* Отключаем подсветку сегодняшнего дня, если он не выбран */
-  .custom-calendar .react-datepicker__day--today {
-    font-weight: normal;
-  }
-  
-  /* Убираем "треугольник" у всплывающего окна */
-  .custom-calendar .react-datepicker__triangle {
-    display: none;
-  }
-  
-  /* --- ОБНОВИТЕ ЭТОТ КЛАСС --- */
-  .dateRange {
-    /* ...ваши старые стили (background, color, border, padding...) ... */
-    background-color: #4a5cff;
-    color: #ffffff;
-    border: none;
-    border-radius: 8px;
-    padding: 0.75rem 1.25rem;
-    font-size: 1rem;
-    font-family: inherit;
-    cursor: pointer;
-    margin-left: -5rem; 
-    margin-bottom: 2.5rem;
-    transition: background-color 0.3s;
-  
-    /* --- ДОБАВЬТЕ ЭТИ СВОЙСТВА --- */
-    display: inline-flex; /* Используем flexbox для выравнивания */
-    align-items: center;  /* Вертикальное выравнивание по центру */
-    gap: 0.75rem;         /* Расстояние между иконками и текстом */
-  }
-  
-  /* --- ДОБАВЬТЕ ЭТОТ НОВЫЙ КЛАСС --- */
-  .dateText {
-    /* Этот класс нужен, чтобы текст занимал центральное место */
-    flex-grow: 1;
-    text-align: center;
-  }
+  font-family: 'Inter', sans-serif;
+  background-color: #1e1e20;
+  border: 1px solid #3a3a3c;
+  border-radius: 12px;
+}
+
+/* Шапка календаря (месяц и стрелки) */
+.custom-calendar .react-datepicker__header {
+  background-color: #1e1e20;
+  border-bottom: 1px solid #3a3a3c;
+}
+
+/* Текст в шапке (месяц, год) */
+.custom-calendar .react-datepicker__current-month,
+.custom-calendar .react-datepicker-time__header,
+.custom-calendar .react-datepicker-year-header {
+  color: #ffffff;
+  font-weight: 500;
+}
+
+/* Стрелки навигации по месяцам */
+.custom-calendar .react-datepicker__navigation-icon::before {
+  border-color: #ffffff;
+}
+
+/* Названия дней недели (Пн, Вт...) */
+.custom-calendar .react-datepicker__day-name {
+  color: #8e8e93;
+}
+
+/* Стили для всех дней в календаре */
+.custom-calendar .react-datepicker__day {
+  color: #ffffff;
+  transition: background-color 0.2s ease, color 0.2s ease;
+}
+
+/* Эффект при наведении на день */
+.custom-calendar .react-datepicker__day:hover {
+  background-color: #3a3a3c;
+  border-radius: 50%;
+}
+
+/* Выбранный день или дни в диапазоне */
+.custom-calendar .react-datepicker__day--selected,
+.custom-calendar .react-datepicker__day--in-selecting-range,
+.custom-calendar .react-datepicker__day--in-range {
+  background-color: #4a5cff;
+  color: #ffffff;
+  border-radius: 50%;
+}
+
+/* Отключаем подсветку сегодняшнего дня, если он не выбран */
+.custom-calendar .react-datepicker__day--today {
+  font-weight: normal;
+}
+
+/* Убираем "треугольник" у всплывающего окна */
+.custom-calendar .react-datepicker__triangle {
+  display: none;
+}
+
+/* --- ОБНОВИТЕ ЭТОТ КЛАСС --- */
+.dateRange {
+  /* ...ваши старые стили (background, color, border, padding...) ... */
+  background-color: #4a5cff;
+  color: #ffffff;
+  border: none;
+  border-radius: 8px;
+  padding: 0.75rem 1.25rem;
+  font-size: 1rem;
+  font-family: inherit;
+  cursor: pointer;
+  margin-left: -5rem; 
+  margin-bottom: 2.5rem;
+  transition: background-color 0.3s;
+
+  /* --- ДОБАВЬТЕ ЭТИ СВОЙСТВА --- */
+  display: inline-flex; /* Используем flexbox для выравнивания */
+  align-items: center;  /* Вертикальное выравнивание по центру */
+  gap: 0.75rem;         /* Расстояние между иконками и текстом */
+}
+
+/* --- ДОБАВЬТЕ ЭТОТ НОВЫЙ КЛАСС --- */
+.dateText {
+  /* Этот класс нужен, чтобы текст занимал центральное место */
+  flex-grow: 1;
+  text-align: center;
+}

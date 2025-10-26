@@ -1,38 +1,35 @@
+// src/widgets/ResultsDisplay/ui/index.tsx
+
 import React, { useState } from 'react';
 import { Button } from '../../../shared/ui/Button';
+import { calculateClosestApproach } from '../../../shared/api/calculate';
 import styles from './ResultsDisplay.module.css';
 
+// 1. ТИПЫ ДАННЫХ
 interface OrbitalParams {
-  a: number;      // большая полуось, AU
-  ecc: number;    // эксцентриситет
-  inc: number;    // наклонение (град)
-  raan: number;   // долгота восходящего узла
-  argp: number;   // аргумент перицентра  
-  nu: number;     // истинная аномалия
+  a: number; ecc: number; inc: number; raan: number; argp: number; nu: number;
 }
-
 interface CloseApproachResult {
-  time: string;        // datetime
-  distance_au: number; // дистанция в AU
-  distance_km: number; // дистанция в км
+  time: string; distance_au: number; distance_km: number;
 }
 
-export const ResultsDisplay: React.FC = () => {
-  // Пока используем константы, потом заменим на данные с бэкенда
-  const orbitalParams: OrbitalParams = {
-    a: 100,
-    ecc: 100, 
-    inc: 100,
-    raan: 100,
-    argp: 100,
-    nu: 100
-  };
+// 2. ИНТЕРФЕЙС ДЛЯ PROPS
+interface ResultsDisplayProps {
+  orbitId: string;
+}
 
+// 3. ОСНОВНОЙ КОМПОНЕНТ
+export const ResultsDisplay: React.FC<ResultsDisplayProps> = ({ orbitId }) => {
+  // --- СОСТОЯНИЕ КОМПОНЕНТА ---
+  const [orbitalParams, setOrbitalParams] = useState<OrbitalParams>({
+    a: 100, ecc: 100, inc: 100, raan: 100, argp: 100, nu: 100
+  });
   const [startTime, setStartTime] = useState('');
   const [endTime, setEndTime] = useState('');
   const [timeError, setTimeError] = useState<string | null>(null);
   const [approachResult, setApproachResult] = useState<CloseApproachResult | null>(null);
   const [isLoading, setIsLoading] = useState(false);
+  const [apiError, setApiError] = useState<string | null>(null);
 
   const paramsConfig = [
     { key: 'a' as keyof OrbitalParams, label: 'Большая полуось', unit: 'AU' },
@@ -43,80 +40,67 @@ export const ResultsDisplay: React.FC = () => {
     { key: 'nu' as keyof OrbitalParams, label: 'Истинная аномалия', unit: 'град' }
   ];
 
+  // --- ОБРАБОТЧИКИ СОБЫТИЙ ---
   const handleStartTimeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setStartTime(e.target.value);
-    if (timeError) setTimeError(null);
+    if (timeError || apiError) { setTimeError(null); setApiError(null); }
   };
-
   const handleEndTimeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setEndTime(e.target.value);
-    if (timeError) setTimeError(null);
+    if (timeError || apiError) { setTimeError(null); setApiError(null); }
   };
 
+  // --- ФИНАЛЬНАЯ ФУНКЦИЯ РАСЧЕТА СБЛИЖЕНИЯ ---
   const handleCalculateApproach = async () => {
-    // Валидация времени
-    if (!startTime || !endTime) {
-      setTimeError('Заполните оба поля времени');
-      return;
-    }
-
-    if (new Date(startTime) >= new Date(endTime)) {
-      setTimeError('Конечное время должно быть позже начального');
-      return;
-    }
+    if (!startTime || !endTime) { setTimeError('Заполните оба поля времени'); return; }
+    if (new Date(startTime) >= new Date(endTime)) { setTimeError('Конечное время должно быть позже начального'); return; }
 
     setTimeError(null);
+    setApiError(null);
     setIsLoading(true);
     
-    console.log("Начальное время:", startTime);
-    console.log("Конечное время:", endTime);
-    console.log("Орбитальные параметры:", orbitalParams);
-    
-    // Имитация API запроса
     try {
-      await new Promise(resolve => setTimeout(resolve, 1500));
+      // Отправляем реальный запрос на бэкенд с ID орбиты
+      const result = await calculateClosestApproach({ orbit_id: orbitId });
       
-      // Пока используем константы, потом заменим на реальные данные с бэкенда
-      const mockResult: CloseApproachResult = {
-        time: "2024-12-15T14:30:00",
-        distance_au: 0.025,
-        distance_km: 3740000
-      };
+      console.log('Расчет сближения запущен! Ответ от бэкенда:', result);
       
-      setApproachResult(mockResult);
-    } catch (error) {
-      console.error('Ошибка при расчете:', error);
+      // ВАЖНО: Это асинхронная задача. Бэкенд возвращает `task_id`.
+      // Чтобы получить РЕЗУЛЬТАТ, нужно будет создать еще один эндпоинт 
+      // и периодически опрашивать его с этим `task_id`.
+      // Пока что мы просто покажем alert, что задача запущена.
+      alert(`Задача на расчет сближения отправлена! ID задачи: ${result.task_id}`);
+
+    } catch (error: any) {
+      console.error('Ошибка при расчете сближения:', error);
+      setApiError(error.detail || error.message || 'Произошла ошибка при расчете сближения');
     } finally {
       setIsLoading(false);
     }
   };
 
+  // Функция для форматирования даты
   const formatDateTime = (datetime: string) => {
     const date = new Date(datetime);
     return date.toLocaleString('ru-RU', {
-      day: '2-digit',
-      month: '2-digit',
-      year: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit',
-      second: '2-digit'
+      day: '2-digit', month: '2-digit', year: 'numeric',
+      hour: '2-digit', minute: '2-digit', second: '2-digit'
     });
   };
 
+  // --- РЕНДЕРИНГ КОМПОНЕНТА (JSX) ---
   return (
     <div className={styles.resultsContainer}>
-      <h2 className={styles.researchTitle}>Расчёт</h2>
+      <h2 className={styles.researchTitle}>Результаты Расчёта</h2>
       
-      {/* Секция с орбитальными параметрами */}
       <div className={styles.resultsContent}>
         <div className={styles.resultsHeader}>
           <span>Измерение</span>
           <span>Результат</span>
           <span>Ед. измерения</span>
         </div>
-
         <div className={styles.resultsList}>
-          {paramsConfig.map((param, index) => (
+          {paramsConfig.map((param) => (
             <div key={param.key} className={styles.resultRow}>
               <span className={styles.paramLabel}>{param.label}</span>
               <span className={styles.paramValue}>{orbitalParams[param.key]}</span>
@@ -126,9 +110,8 @@ export const ResultsDisplay: React.FC = () => {
         </div>
       </div>
 
-      {/* Секция диапазона поиска */}
       <div className={styles.searchRangeSection}>
-        <h3 className={styles.searchRangeTitle}>Диапазон поиска</h3>
+        <h3 className={styles.searchRangeTitle}>Диапазон поиска сближения с Землёй</h3>
         
         <div className={styles.timeInputsContainer}>
           <div className={styles.timeInputGroup}>
@@ -158,12 +141,8 @@ export const ResultsDisplay: React.FC = () => {
           </div>
         </div>
 
-        {/* Отображение ошибки времени */}
-        {timeError && (
-          <div className={styles.timeError}>
-            {timeError}
-          </div>
-        )}
+        {timeError && <div className={styles.timeError}>{timeError}</div>}
+        {apiError && <div className={styles.timeError}>{apiError}</div>}
 
         <Button 
           size="lg" 
@@ -172,14 +151,12 @@ export const ResultsDisplay: React.FC = () => {
           loading={isLoading}
           disabled={isLoading}
         >
-          {isLoading ? 'Расчёт сближения...' : 'Рассчитать сближение с Землёй'}
+          {isLoading ? 'Расчёт сближения...' : 'Рассчитать сближение'}
         </Button>
 
-        {/* Блок результатов сближения */}
         {approachResult && (
           <div className={styles.approachResultSection}>
-            <h3 className={styles.approachResultTitle}>Ближайшее сближение кометы с Землёй</h3>
-            
+            <h3 className={styles.approachResultTitle}>Ближайшее сближение</h3>
             <div className={styles.approachResultsList}>
               <div className={styles.approachResultRow}>
                 <span className={styles.approachParamLabel}>Время сближения</span>
@@ -187,7 +164,6 @@ export const ResultsDisplay: React.FC = () => {
                   {formatDateTime(approachResult.time)}
                 </span>
               </div>
-              
               <div className={styles.approachResultRow}>
                 <span className={styles.approachParamLabel}>Дистанция</span>
                 <span className={styles.approachParamValue}>
