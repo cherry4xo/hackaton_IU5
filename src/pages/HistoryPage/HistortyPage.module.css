@@ -1,0 +1,7 @@
+/* src/pages/HistoryPage/HistoryPage.module.css */
+.pageWrapper {
+  width: 100%;
+  /* display: flex;  */
+  justify-content: center;
+  padding-top: 4rem; /* <-- ДОБАВЬТЕ ЭТУ СТРОКУ (можете подобрать значение) */
+}
