@@ -272,6 +272,7 @@ async def calculate_closest_approach(
     request: ClosestApproachRequest,
     user: User = Depends(get_current_user),
 ):
+    # Находим задачу по task_id
     task = await CalculationTask.get_or_none(uuid=request.task_id).select_related('orbit', 'comet', 'user')
     if not task:
         raise HTTPException(
@@ -279,18 +280,21 @@ async def calculate_closest_approach(
             detail="Task not found"
         )
     
+    # Проверяем доступ
     if task.user_id != user.uuid:
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="Not authorized to access this task"
         )
     
+    # Проверяем, что орбита уже рассчитана
     if not task.orbit:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="Orbit is not calculated yet. Please complete orbit calculation first."
         )
     
+    # Проверяем, не выполнен ли уже расчёт сближения
     if task.close_approach_id:
         return TaskResponse(
             task_id=task.uuid,
@@ -298,10 +302,13 @@ async def calculate_closest_approach(
             submitted_at=task.created_at
         )
     
+    # Обновляем временные границы
+    task.observation_start_time = request.observation_start_time
+    task.observation_end_time = request.observation_end_time
     task.status = CalculationTaskStatus.PROCESSING
     await task.save()
-    
-    # Create a new task for closest approach calculation
+
+    # Подготавливаем данные для расчёта
     orbit = task.orbit
     orbit_elements = {
         "semi_major_axis": orbit.semi_major_axis,
@@ -312,11 +319,19 @@ async def calculate_closest_approach(
         "periapsis_time": orbit.periapsis_time
     }
 
+    # Формируем опции
+    options = request.options or {}
+    options.update({
+        "observation_start_time": request.observation_start_time.isoformat(),
+        "observation_end_time": request.observation_end_time.isoformat()
+    })
+
+    # Отправляем в очередь
     success = await send_closest_approach_task(
         str(task.uuid),
         str(user.uuid),
         orbit_elements,
-        request.options
+        options  # ← передаём обновлённые options
     )
 
     if not success:
