@@ -1,27 +1,39 @@
 .footer {
+  /* --- КЛЮЧЕВЫЕ ИЗМЕНЕНИЯ --- */
+  /* position: fixed; 1. Фиксируем футер относительно окна браузера */
+  bottom: 0;       /* 2. Прижимаем его к нижнему краю */
+  left: 0;         /* 3. Прижимаем его к левому краю */
+  z-index: 100;    /* 4. Гарантируем, что он будет поверх другого контента */
+
+  /* Убираем свойство, которое больше не нужно */
+  /* margin-top: auto; - УДАЛИТЬ */
+  
+  /* Остальные стили остаются */
   background-color: #000000;
-  padding: 30px 40px; 
-  border-top: 1px solid rgba(255, 255, 255, 0.1); 
+  margin-top: 100px;
+  padding: 30px 40px;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
   width: 100%;
+  box-sizing: border-box; /* Важно, чтобы padding не ломал ширину */
 }
 
 .footerContainer {
-  max-width: 1200px; 
+  max-width: 1200px;
   margin: 0 auto;
   display: flex;
-  justify-content: space-between; 
-  align-items: center; 
+  justify-content: space-between;
+  align-items: center;
 }
 
 .copyright {
   margin: 0;
-  color: rgba(255, 255, 255, 0.6); 
+  color: rgba(255, 255, 255, 0.6);
   font-size: 14px;
 }
 
 .socialLinks {
   display: flex;
-  gap: 25px; 
+  gap: 25px;
 }
 
 .socialLinks a {
@@ -31,5 +43,5 @@
 }
 
 .socialLinks a:hover {
-  color: #ffffff; 
+  color: #ffffff;
 }
