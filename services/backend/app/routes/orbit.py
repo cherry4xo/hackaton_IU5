@@ -234,6 +234,7 @@ async def get_task_result(
             orbit = await task.orbit
             if orbit:
                 orbit_result = OrbitResult(
+                    uuid=orbit.uuid,
                     semi_major_axis=orbit.semi_major_axis,
                     eccentricity=orbit.eccentricity,
                     inclination=orbit.inclination,

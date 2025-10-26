@@ -35,6 +35,7 @@ class TaskListItem(BaseModel):
     comet_name: Optional[str] = None
 
 class OrbitResult(BaseModel):
+    uuid: UUID4
     semi_major_axis: float
     eccentricity: float
     inclination: float
