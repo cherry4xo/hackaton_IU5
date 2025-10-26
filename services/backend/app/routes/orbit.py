@@ -13,6 +13,7 @@ from PIL import Image
 import io
 import uuid
 from typing import Dict, Any
+from uuid import UUID
 
 router = APIRouter()
 
@@ -113,6 +114,34 @@ async def calculate_orbit(
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail='Failed to send task to queue'
+        )
+    
+    return TaskResponse(
+        task_id=task.uuid,
+        status=task.status,
+        submitted_at=task.created_at
+    )
+
+
+@router.get("/task/{task_id}", response_model=TaskResponse)
+async def get_task_status(
+    task_id: UUID,
+    user: User = Depends(get_current_user),
+):
+    # Get the task from database
+    task = await CalculationTask.get_or_none(uuid=task_id)
+    
+    if not task:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Task not found"
+        )
+    
+    # Check if user has access to this task
+    if task.user_id != user.id:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Not authorized to access this task"
         )
     
     return TaskResponse(
