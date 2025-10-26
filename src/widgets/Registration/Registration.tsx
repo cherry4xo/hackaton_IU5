@@ -29,6 +29,7 @@ export const Registration: React.FC<RegistrationProps> = ({ onClose, onShowLogin
     return Object.keys(newErrors).length === 0;
   };
 
+  // ИЗМЕНЕНИЕ 1: Обновлена функция отправки, теперь она работает с бэкендом
   const handleRegister = async (event: React.FormEvent) => {
     event.preventDefault();
     if (!validate()) return;
@@ -36,16 +37,16 @@ export const Registration: React.FC<RegistrationProps> = ({ onClose, onShowLogin
     setIsLoading(true);
     setFormError(null);
     
-    // Раскомментируйте, когда бэкенд будет готов
+    // Раскомментируйте этот блок, когда бэкенд будет готов
     /*
     try {
-      // ИЗМЕНЕНИЕ: передаем `username` вместо `login`
-      const data = await apiRegister({ email, username: login, password }); 
+      const data = await apiRegister({ email, login, password });
       console.log('Успешная регистрация:', data);
-      onShowLogin();
+      // После успешной регистрации переключаемся на окно входа
+      onShowLogin(); 
     } catch (err: any) {
       console.error('Ошибка регистрации:', err);
-      setFormError(err.message || 'Ошибка при регистрации');
+      setFormError(err.message || 'Произошла ошибка при регистрации');
     } finally {
       setIsLoading(false);
     }
