@@ -80,7 +80,7 @@ async def upload_observation_image(
 @router.post("/calculate", response_model=TaskResponse)
 async def calculate_orbit(
     request: OrbitCalculationRequest,
-    comet_uuid: Optional[str] = None,
+    comet_name: Optional[str] = None,
     user: User = Depends(get_current_user),
 ):
     if len(request.observations) < 3:
@@ -93,12 +93,13 @@ async def calculate_orbit(
     submitted_at = datetime.now()
 
     comet = None
-    if comet_uuid:
-        comet = Comets.get_or_none(uuid=comet_uuid)
+    if comet_name:
+        comet = Comets.get_or_none(name=comet_name)
         if not comet:
-            raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND,
-                detail="Comet not found"
+            comet = await Comets.create(
+                designation=comet_name, 
+                discovered_by=user,
+                discovery_date=datetime.now(),
             )
         
     task = await CalculationTask.create(
