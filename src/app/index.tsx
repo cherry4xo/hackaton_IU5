@@ -2,7 +2,7 @@
 import HomePage from '../pages/HomePage';
 import CalculatePage from '../pages/CalculatePage';
 import HistoryPage from '../pages/HistoryPage';
-import ResultsPage from '@/pages/ResultPage';
+import ResultsPage from '../pages/ResultPage';
 import { Routes, Route } from 'react-router-dom';
 import { MainLayout } from '../widgets/MainLayout/ui/MainLayout';
 import React from 'react';
