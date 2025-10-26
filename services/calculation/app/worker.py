@@ -42,13 +42,13 @@ async def handle_orbit_calculation(task_data: dict, task: CalculationTask) -> Di
                     discovered_by_id=task.user_id,
                     discovery_date=datetime.now()
                 )
+            # Устанавливаем comet для задачи, но не сохраняем пока
             task.comet = comet
-            await task.save()  # <-- Сохраняем, чтобы comet_id сохранился в task
 
         # Создаём Orbits
         orbit_result = result["result"]["orbit"]
         orbit = await Orbits.create(
-            comet=comet,  # Преобразуем UUID в строку
+            comet=comet,
             semi_major_axis=orbit_result["semi_major_axis"],
             eccentricity=orbit_result["eccentricity"],
             inclination=orbit_result["inclination"],
@@ -60,6 +60,7 @@ async def handle_orbit_calculation(task_data: dict, task: CalculationTask) -> Di
             is_hyperbolic=orbit_result["semi_major_axis"] is None
         )
         task.orbit = orbit
+        # Сохраняем задачу один раз в конце
         await task.save()
     return result
 
@@ -168,6 +169,7 @@ async def process_single_task(queue_name: str, task_type: CalculationTaskType, l
                         discovered_by_id=task.user_id,
                         discovery_date=datetime.now()
                     )
+                    # Устанавливаем comet для задачи, но не сохраняем пока
                     task.comet = comet
 
                 # Создаём Orbits
@@ -201,6 +203,7 @@ async def process_single_task(queue_name: str, task_type: CalculationTaskType, l
             else:
                 task.error_message = result["error"]
 
+            # Сохраняем задачу один раз в конце
             await task.save()
             result_queue = "result_queue"
 
