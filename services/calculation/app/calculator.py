@@ -64,11 +64,11 @@ async def calculate_orbit_task(task_data: dict) -> Dict[str, Any]:
     options = task_data.get("options", {})
 
     # Process image for the entire task if available
-    processed_observations = await process_image_for_observations(task_id, observations, image_reference)
+    # processed_observations = await process_image_for_observations(task_id, observations, image_reference)
 
     try:
         # 1. Расчёт орбиты
-        orbit_result = calculator.calculate_orbit(processed_observations)
+        orbit_result = calculator.calculate_orbit(observations=observations)
 
         return {
             "task_id": task_id,
@@ -131,11 +131,11 @@ async def process_task(task_data: dict) -> Dict[str, Any]:
     options = task_data.get("options", {})
 
     # Process image for the entire task if available
-    processed_observations = await process_image_for_observations(task_id, observations, image_reference)
+    # processed_observations = await process_image_for_observations(task_id, observations, image_reference)
 
     try:
         # 1. Расчёт орбиты
-        orbit_result = calculator.calculate_orbit(processed_observations)
+        orbit_result = calculator.calculate_orbit(observations=observations)
 
         # 2. Расчёт сближения
         start_time = datetime.fromisoformat(options.get("start_time", datetime.utcnow().isoformat()))

@@ -1,3 +1,4 @@
+from unittest import mock
 import pytest
 from unittest.mock import Mock, patch, AsyncMock, MagicMock
 from datetime import datetime
@@ -270,7 +271,7 @@ async def test_process_single_task_orbit_calculation():
                         mock_redis_client.xadd = AsyncMock()
                         
                         # Call the function
-                        await process_single_task("orbit_calculation_queue", CalculationTaskType.ORBIT_CALCULATION)
+                        await process_single_task("orbit_calculation_queue", CalculationTaskType.ORBIT_CALCULATION, {"orbit_calculation_queue": "$"})
                         
                         # Assertions
                         mock_redis_client.xread.assert_called_once_with(
@@ -344,7 +345,7 @@ async def test_process_single_task_closest_approach():
                     mock_redis_client.xadd = AsyncMock()
                     
                     # Call the function
-                    await process_single_task("closest_approach_queue", CalculationTaskType.CLOSEST_APPROACH)
+                    await process_single_task("closest_approach_queue", CalculationTaskType.CLOSEST_APPROACH, {"closest_approach_queue": "$"})
                     
                     # Assertions
                     mock_redis_client.xread.assert_called_once_with(

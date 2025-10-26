@@ -10,6 +10,7 @@ from app.db import init, register_db, TORTOISE_ORM
 from app import settings
 from app.routes.users import router as users_router
 from app.routes.orbit import router as orbit_router
+from app.routes.observations import router as observations_router
 from app.logger import setup_logging, LoggingMiddleware
 
 
@@ -44,6 +45,7 @@ app.router.lifespan_context = lifespan_wrapper
 init_middlewares(app)
 app.include_router(users_router, prefix="/users", tags=["users"])
 app.include_router(orbit_router, prefix="/orbit", tags=["orbit"])
+app.include_router(observations_router, prefix="/observations", tags=["observations"])
 
 # if __name__ == "__main__":
 #     uvicorn.run(app, host=settings.API_HOST, port=int(settings.API_PORT))

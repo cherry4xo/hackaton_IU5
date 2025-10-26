@@ -1,0 +1,34 @@
+# Redis Commands to View Queues (Streams)
+
+# Connect to Redis
+redis-cli -h redis -p 6379
+
+# Once connected, use these commands:
+
+# List all keys (to see what queues exist)
+KEYS *
+
+# Get information about a specific queue/stream
+XINFO STREAM orbit_calculation_queue
+XINFO STREAM closest_approach_queue
+XINFO STREAM orbit_result_queue
+XINFO STREAM closest_approach_result_queue
+
+# View messages in a queue (first 10 messages)
+XRANGE orbit_calculation_queue - + COUNT 10
+XRANGE closest_approach_queue - + COUNT 10
+XRANGE orbit_result_queue - + COUNT 10
+XRANGE closest_approach_result_queue - + COUNT 10
+
+# Get the number of messages in a queue
+XLEN orbit_calculation_queue
+XLEN closest_approach_queue
+XLEN orbit_result_queue
+XLEN closest_approach_result_queue
+
+# View the last message in a queue
+XREVRANGE orbit_calculation_queue + - COUNT 1
+XREVRANGE closest_approach_queue + - COUNT 1
+
+# Monitor all commands in real-time (useful for debugging)
+MONITOR

@@ -1,11 +1,27 @@
 import json
 import logging
 from datetime import datetime
+from typing import Any, Dict
 
 from app.utils.queue.database import redis_client
 from app.utils.queue.schemas import OrbitCalculationRequest
 
 logger = logging.getLogger(__name__)
+
+
+def _clean_message(message: Dict[str, Any]) -> Dict[str, Any]:
+    """Clean message data for Redis stream."""
+    clean_message = {}
+    for k, v in message.items():
+        if v is None:
+            clean_message[k] = ""
+        elif isinstance(v, (dict, list)):
+            clean_message[k] = json.dumps(v)
+        elif isinstance(v, (str, int, float, bytes)):
+            clean_message[k] = v
+        else:
+            clean_message[k] = str(v)
+    return clean_message
 
 
 async def send_orbit_calculation_task(task_id: str, user_id: str, request: OrbitCalculationRequest):
@@ -18,16 +34,7 @@ async def send_orbit_calculation_task(task_id: str, user_id: str, request: Orbit
         "options": request.options or {}
     }
 
-    clean_message = {}
-    for k, v in message.items():
-        if v is None:
-            clean_message[k] = ""
-        elif isinstance(v, (dict, list)):
-            clean_message[k] = json.dumps(v)
-        elif isinstance(v, (str, int, float, bytes)):
-            clean_message[k] = v
-        else:
-            clean_message[k] = str(v)
+    clean_message = _clean_message(message)
 
     try:
         await redis_client.xadd("orbit_calculation_queue", clean_message)
@@ -47,16 +54,7 @@ async def send_closest_approach_task(task_id: str, user_id: str, orbit_elements:
         "options": json.dumps(options or {})
     }
 
-    clean_message = {}
-    for k, v in message.items():
-        if v is None:
-            clean_message[k] = ""
-        elif isinstance(v, (dict, list)):
-            clean_message[k] = json.dumps(v)
-        elif isinstance(v, (str, int, float, bytes)):
-            clean_message[k] = v
-        else:
-            clean_message[k] = str(v)
+    clean_message = _clean_message(message)
 
     try:
         await redis_client.xadd("closest_approach_queue", clean_message)
@@ -77,8 +75,11 @@ async def send_calculation_task(task_id: str, user_id: str, request: OrbitCalcul
         "image_reference": request.image_reference or "",
         "options": json.dumps(request.options or {})
     }
+    
+    clean_message = _clean_message(message)
+    
     try:
-        await redis_client.xadd("input_queue", message)
+        await redis_client.xadd("input_queue", clean_message)
         logger.info(f"Task {task_id} added into input_queue")
         return True
     except Exception as e:

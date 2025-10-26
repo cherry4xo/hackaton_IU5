@@ -10,7 +10,7 @@ from app.utils.contrib import get_current_user
 from app.utils.queue.queue import send_calculation_task
 from app.services.observations import get_all, create_observation, get_by_uuid, delete_by_uuid
 
-router = APIRouter(prefix="/observations")
+router = APIRouter()
 
 @router.post("/", response_model=CreateObservations, status_code=status.HTTP_201_CREATED)
 async def create_new_observation(

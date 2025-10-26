@@ -42,6 +42,33 @@ class User(TimestampMixin, BaseModel):
     password_hash = fields.CharField(max_length=255, null=True)
     registration_date = fields.DateField(auto_now_add=True)
     role = fields.CharEnumField(UserRole, default=UserRole.RESEARCHER, description="User role")
+    
+    @classmethod
+    async def get_by_uuid(cls, uuid: UUID4) -> "User":
+        try:
+            query = cls.get_or_none(uuid=uuid)
+            user = await query
+            return user
+        except DoesNotExist:
+            return None
+
+    @classmethod
+    async def get_by_username(cls, username: str) -> Optional["User"]:
+        try:
+            query = cls.get_or_none(username=username)
+            user = await query
+            return user
+        except DoesNotExist:
+            return None
+        
+    @classmethod 
+    async def get_by_email(cls, email: str) -> Optional["User"]:
+        try:
+            query = cls.get_or_none(email=email)
+            user = await query
+            return user
+        except DoesNotExist:
+            return None
 
     def __str__(self):
         return f"{self.username} ({self.role.value})"
@@ -56,9 +83,9 @@ class Observatories(BaseModel):
     latitude = fields.FloatField(null=False)
     longitude = fields.FloatField(null=False)
     elevation_m = fields.FloatField(null=False)
-
+    
     class Meta:
-        table = "Observatories"
+        table = "observatories"
 
 class Comets(TimestampMixin, BaseModel):
     uuid = fields.UUIDField(pk = True)
@@ -68,11 +95,11 @@ class Comets(TimestampMixin, BaseModel):
     discovery_date = fields.DatetimeField(null=False) 
 
     class Meta:
-        table = "Comets"
+        table = "comets"
 
 class Observations(TimestampMixin, BaseModel):
     uuid = fields.UUIDField(pk=True)
-    comet_id: fields.ForeignKeyRelation["Comets"] = fields.ForeignKeyField("models.Comets", related_name="comets", on_delete=fields.CASCADE, null=False)
+    comet: fields.ForeignKeyRelation["Comets"] = fields.ForeignKeyField("models.Comets", related_name="comets_observations", on_delete=fields.CASCADE, null=False)
     observatory_id: fields.ForeignKeyRelation["Observatories"] = fields.ForeignKeyField("models.Observatories", related_name="observatories", on_delete=fields.CASCADE, null=False)
     observer_id: fields.ForeignKeyRelation["User"] = fields.ForeignKeyField("models.User", related_name="observers", on_delete = fields.CASCADE, null=False)
     observation_time = fields.DatetimeField(null=False)
@@ -82,13 +109,22 @@ class Observations(TimestampMixin, BaseModel):
     altitude_deg = fields.FloatField(null=False)
     azimuth_deg = fields.FloatField(null=False)
     processed = fields.BooleanField(default=False)
+    
+    @classmethod
+    async def get_or_none(cls, observation_uuid: UUID4) -> Optional["Observations"]:
+        return await cls.get_or_none(uuid=observation_uuid)
+    
+    @classmethod
+    async def delete(cls, observation_uuid: UUID4) -> bool:
+        delete_count = cls.filter(uuid=observation_uuid).delete()
+        return delete_count
 
     class Meta:
-        table = "Observations"
+        table = "observations"
 
 class Orbits(TimestampMixin, BaseModel):
     uuid = fields.UUIDField(pk=True)
-    comet_id: fields.ForeignKeyRelation["Comets"] = fields.ForeignKeyField("models.Comets", related_name="comets", on_delete=fields.CASCADE, null=False)
+    comet: fields.ForeignKeyRelation["Comets"] = fields.ForeignKeyField("models.Comets", related_name="comets_orbits", on_delete=fields.CASCADE, null=False)
     semi_major_axis = fields.FloatField()
     eccentricity = fields.FloatField()
     inclination = fields.FloatField() 
@@ -100,18 +136,18 @@ class Orbits(TimestampMixin, BaseModel):
     is_hyperbolic = fields.BooleanField()
 
     class Meta:
-        table = "Orbits"
+        table = "orbits"
 
 class Close_approaches(TimestampMixin, BaseModel):
     uuid = fields.UUIDField(pk=True)
-    comet_id: fields.ForeignKeyRelation["Comets"] = fields.ForeignKeyField("models.Comets", related_name="comets", on_delete=fields.CASCADE, null=False)
+    comet: fields.ForeignKeyRelation["Comets"] = fields.ForeignKeyField("models.Comets", related_name="comets_approaches", on_delete=fields.CASCADE, null=False)
     approach_time = fields.DatetimeField(null=False)
     distance_au = fields.FloatField(null=True)
     distance_km = fields.FloatField(null=False)
-    orbit_id: fields.ForeignKeyRelation["Orbits"] = fields.ForeignKeyField("models.Orbits", related_name="orbits", on_delete=fields.CASCADE, null=False)
+    orbit: fields.ForeignKeyRelation["Orbits"] = fields.ForeignKeyField("models.Orbits", related_name="orbits", on_delete=fields.CASCADE, null=False)
 
     class Meta:
-        table = "Close_approaches"
+        table = "close_approaches"
 
 class CalculationTask(TimestampMixin, BaseModel):
     """

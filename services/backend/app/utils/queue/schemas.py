@@ -12,6 +12,10 @@ class OrbitCalculationRequest(BaseModel):
     image_reference: Optional[str] = None
     options: Optional[dict] = {}
 
+class ClosestApproachRequest(BaseModel):
+    orbit_id: UUID4
+    options: Optional[dict] = {}
+
 class TaskResponse(BaseModel):
     task_id: UUID4
     status: str

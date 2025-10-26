@@ -4,17 +4,17 @@ from typing import Optional
 import uuid
 from fastapi import APIRouter, Depends, HTTPException, UploadFile, File, Form
 from starlette import status
-from app.utils.queue.schemas import OrbitCalculationRequest, TaskResponse
-from app.models import CalculationTask, CalculationTaskStatus, Comets, User, Observations
+from app.utils.queue.schemas import OrbitCalculationRequest, TaskResponse, ClosestApproachRequest
+from app.models import CalculationTask, CalculationTaskStatus, Comets, User, Observations, Orbits
 from app.utils.contrib import get_current_user
-from app.utils.queue.queue import send_orbit_calculation_task
+from app.utils.queue.queue import send_orbit_calculation_task, send_closest_approach_task
 from app.utils.minio_client import get_minio_client
 from PIL import Image
 import io
 import uuid
 from typing import Dict, Any
 
-router = APIRouter(prefix="/orbit")
+router = APIRouter()
 
 
 @router.post("/upload-image")
@@ -104,6 +104,71 @@ async def calculate_orbit(
         task_id,
         str(user.uuid),
         request
+    )
+
+    if not success:
+        task.status = CalculationTaskStatus.FAILED
+        task.error_message = "Failed to send to queue"
+        await task.save()
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail='Failed to send task to queue'
+        )
+    
+    return TaskResponse(
+        task_id=task.uuid,
+        status=task.status,
+        submitted_at=task.created_at
+    )
+
+
+@router.post("/calculate-closest-approach", response_model=TaskResponse)
+async def calculate_closest_approach(
+    request: ClosestApproachRequest,
+    user: User = Depends(get_current_user),
+):
+    # Find the orbit
+    orbit = await Orbits.get_or_none(id=request.orbit_id)
+    if not orbit:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Orbit not found"
+        )
+    
+    # Check if user has access to this orbit
+    if orbit.comet.discovered_by_id != user.id:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Not authorized to access this orbit"
+        )
+    
+    # Create a new task for closest approach calculation
+    task_id = str(uuid.uuid4())
+    task = await CalculationTask.create(
+        uuid=task_id,
+        user=user,
+        comet=orbit.comet,
+        orbit=orbit,
+        status=CalculationTaskStatus.PENDING,
+        location_code=request.options.get('location_code', '500'),
+    )
+
+    # Prepare orbit elements for calculation
+    orbit_elements = {
+        "semi_major_axis": orbit.semi_major_axis,
+        "eccentricity": orbit.eccentricity,
+        "inclination": orbit.inclination,
+        "longitude_ascending_node": orbit.longitude_ascending_node,
+        "argument_periapsis": orbit.argument_periapsis,
+        "periapsis_time": orbit.periapsis_time
+    }
+
+    # Send closest approach calculation task to queue
+    success = await send_closest_approach_task(
+        task_id,
+        str(user.uuid),
+        orbit_elements,
+        request.options
     )
 
     if not success:
