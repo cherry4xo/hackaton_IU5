@@ -271,7 +271,7 @@ async def calculate_closest_approach(
     user: User = Depends(get_current_user),
 ):
     # Find the orbit
-    orbit = await Orbits.get_or_none(id=request.orbit_id)
+    orbit = await Orbits.get_or_none(uuid=request.orbit_id)
     if not orbit:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
