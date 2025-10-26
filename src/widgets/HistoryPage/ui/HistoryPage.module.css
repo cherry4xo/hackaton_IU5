@@ -24,27 +24,20 @@
 /* ---- Временная шкала (Timeline) ---- */
 .timeline {
     position: relative;
-    /* Отступ слева, чтобы освободить место для вертикальной линии и дат */
-    padding-left: 5rem; 
+    /* Отступ слева больше не нужен, так как линии нет */
+    /* padding-left: 5rem; - УДАЛЕНО */
 }
 
-/* Вертикальная линия */
-.timeline::before {
-    content: '';
-    position: absolute;
-    left: 20px; /* Позиция линии */
-    top: 5rem;   /* Начинается ниже кнопки */
-    bottom: 3rem;/* Заканчивается выше "Конца истории" */
-    width: 1px;
-    background-color: #3a3a3c;
-}
+/* 
+  Блок .timeline::before, который рисовал вертикальную линию, полностью удален.
+*/
 
 /* ---- Кнопка фильтра по дате ---- */
 .dateRange {
-    background-color: #4a5cff;
+    background-color: #241EF5;
     color: #ffffff;
     border: none;
-    border-radius: 8px;
+    border-radius: 15px;
     padding: 0.75rem 1.25rem;
     font-size: 1rem;
     font-family: inherit; /* Наследуем шрифт */
@@ -52,8 +45,8 @@
     display: inline-flex;
     align-items: center;
     gap: 0.5rem;
-    /* Смещаем кнопку влево, чтобы она была на одной линии с датами */
-    margin-left: -5rem; 
+    /* Отрицательный отступ больше не нужен */
+    /* margin-left: -5rem; - УДАЛЕНО */
     margin-bottom: 2.5rem;
     transition: background-color 0.3s;
 }
@@ -69,29 +62,17 @@
     padding-bottom: 1.5rem;
 }
 
-/* Круглая точка на вертикальной линии */
-.timelineGroup::before {
-    content: '';
-    position: absolute;
-    left: -4.2rem; /* Совмещаем с линией */
-    top: 0.5rem;   /* Выравниваем по вертикали с карточкой */
-    width: 9px;
-    height: 9px;
-    background-color: #3a3a3c;
-    border-radius: 50%;
-    z-index: 2; /* Отображаем над линией */
+.timelineDate {
+  color: #ffffff;
+  font-size: 24px;
+  font-weight: 900;
+  margin-bottom: 1rem; /* Добавляем отступ под датой */
+  margin-left: 1rem; /* Добавляем отступ под датой */
 }
 
-/* Дата слева от линии */
-.timelineDate {
-    position: absolute;
-    left: -5rem; /* Левее линии */
-    top: 0.2rem;
-    transform: translateX(-100%); /* Гарантирует, что текст будет слева от точки */
-    color: #8e8e93;
-    white-space: nowrap;
-    font-size: 0.9rem;
-}
+/* 
+  Блок .timelineGroup::before, который рисовал точки на линии, полностью удален.
+*/
 
 .timelineItem {
     margin-bottom: 0.75rem;
@@ -102,20 +83,19 @@
 
 /* ---- Карточки наблюдений ---- */
 .card {
-    background-color: rgba(30, 30, 32, 0.8); /* Полупрозрачный фон */
-    border: 1px solid #2a2a2c;
-    backdrop-filter: blur(5px); /* Эффект размытия фона под карточкой */
-    border-radius: 12px;
-    padding: 1.5rem;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
+  background-color: #171717; /* Новый цвет фона */
+  border: 0.3px solid #ffffff; /* Новая белая обводка */
+  border-radius: 25px;
+  padding: 1.5rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
 }
-
 .cardContent h3 {
-    margin: 0 0 0.25rem 0;
-    font-size: 1.25rem;
-    font-weight: 500;
+  margin: 0 0 0.25rem 0;
+  font-size: 1.25rem;
+  font-weight: 500;
+  color: #FCFCFC; /* Новый цвет заголовка */
 }
 
 .cardContent p {
@@ -125,11 +105,10 @@
 }
 
 .cardAction {
-    color: #4a5cff;
-    text-decoration: none;
-    font-size: 1rem;
-    font-weight: 500;
-    transition: color 0.3s;
+  color: #241EF5; /* Новый цвет для результата */
+  text-decoration: none;
+  font-size: 1.5rem;
+  font-weight: 600;
 }
 .cardAction:hover {
     color: #6a7cff;
