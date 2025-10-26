@@ -7,6 +7,7 @@ import { Login } from '../../../widgets/Login/Login';
 import DynamicSpheres from '../../MainLayout/ui/DynamicSpheres'; // <-- 2. Импортируем DynamicSpheres
 import styles from './MainLayout.module.css';
 
+// 2. УБИРАЕМ `children` из props
 export const MainLayout: React.FC = () => {
   const [modalView, setModalView] = useState<'login' | 'register' | null>(null);
 
@@ -22,16 +23,15 @@ export const MainLayout: React.FC = () => {
         </Suspense>
       </div>
 
-      {/* Ошибка №1 исправлена здесь: передаем prop в Header */}
       <Header onUserIconClick={handleShowLogin} />
       
       <main className={styles.content}>
+        {/* 3. ИСПОЛЬЗУЕМ <Outlet /> ЗДЕСЬ */}
         <Outlet />
       </main>
       
       <Footer />
 
-      {/* Ошибки №2 и №3 исправлены здесь: передаем нужные props в Login и Registration */}
       {modalView === 'login' && (
         <Login 
           onClose={handleCloseModal} 

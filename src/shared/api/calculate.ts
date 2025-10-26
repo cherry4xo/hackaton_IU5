@@ -53,22 +53,24 @@ export const calculateOrbit = (data: {
 };
 
 
-// --- НОВАЯ ФУНКЦИЯ ---
-// 3. ЗАПРОС НА РАСЧЕТ СБЛИЖЕНИЯ
-// POST /orbit/calculate-closest-approach
 export const calculateClosestApproach = (data: {
   orbit_id: string;
+  observation_start_time: string; // <-- Добавлено
+  observation_end_time: string;   // <-- Добавлено
 }) => {
   const requestBody = {
     orbit_id: data.orbit_id,
-    options: {}, // Отправляем пустой объект, как в документации
+    observation_start_time: data.observation_start_time, // <-- Добавлено
+    observation_end_time: data.observation_end_time,   // <-- Добавлено
+    options: {},
   };
 
   return fetchWithAuth(`${BASE_URL}/orbit/calculate-closest-approach`, {
     method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-    },
+    headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(requestBody),
   });
+};
+export const getTaskResult = (taskId: string) => {
+  return fetchWithAuth(`${BASE_URL}/orbit/task/${taskId}/result`);
 };
