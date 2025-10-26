@@ -94,7 +94,7 @@ async def calculate_orbit(
 
     comet = None
     if comet_name:
-        comet = await Comets.get_or_none(name=comet_name)
+        comet = await Comets.get_or_none(designation=comet_name)
         if not comet:
             comet = await Comets.create(
                 designation=comet_name, 
