@@ -50,7 +50,10 @@ async def send_closest_approach_task(task_id: str, user_id: str, orbit_elements:
         "task_id": task_id,
         "user_id": user_id,
         "timestamp": datetime.now().isoformat(),
-        "orbit_elements": json.dumps(orbit_elements),
+        "orbit_elements": json.dumps(
+            orbit_elements,
+            default=lambda o: o.isoformat() if isinstance(o, datetime) else str(o)
+        ),
         "options": json.dumps(options or {})
     }
 
