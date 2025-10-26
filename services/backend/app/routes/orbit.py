@@ -1,11 +1,20 @@
 from datetime import datetime
 import json
-from typing import Optional
+from typing import Optional, List
 import uuid
 from fastapi import APIRouter, Depends, HTTPException, UploadFile, File, Form
 from starlette import status
-from app.utils.queue.schemas import OrbitCalculationRequest, TaskResponse, ClosestApproachRequest
-from app.models import CalculationTask, CalculationTaskStatus, Comets, User, Observations, Orbits
+from app.utils.queue.schemas import (
+    OrbitCalculationRequest, 
+    TaskResponse, 
+    ClosestApproachRequest,
+    TaskListItem,
+    TaskResultResponse,
+    TaskType,
+    OrbitResult,
+    ClosestApproachResult
+)
+from app.models import CalculationTask, CalculationTaskStatus, Comets, User, Observations, Orbits, Close_approaches
 from app.utils.contrib import get_current_user
 from app.utils.queue.queue import send_orbit_calculation_task, send_closest_approach_task
 from app.utils.minio_client import get_minio_client
@@ -148,6 +157,110 @@ async def get_task_status(
         task_id=task.uuid,
         status=task.status,
         submitted_at=task.created_at
+    )
+
+
+@router.get("/tasks", response_model=List[TaskListItem])
+async def get_user_tasks(
+    user: User = Depends(get_current_user),
+):
+    # Get all tasks for the user
+    tasks = await CalculationTask.filter(user=user).order_by("-created_at").all()
+    
+    task_list = []
+    for task in tasks:
+        # Определяем тип задачи
+        task_type = TaskType.ORBIT_CALCULATION
+        if task.orbit_id and task.close_approach_id:
+            task_type = TaskType.CLOSEST_APPROACH
+            
+        # Получаем имя кометы, если есть
+        comet_name = None
+        if task.comet_id:
+            comet = await task.comet
+            comet_name = comet.name if comet else None
+            
+        task_item = TaskListItem(
+            task_id=task.uuid,
+            status=task.status,
+            task_type=task_type,
+            submitted_at=task.created_at,
+            completed_at=task.updated_at if task.status == "completed" else None,
+            comet_name=comet_name
+        )
+        task_list.append(task_item)
+    
+    return task_list
+
+
+@router.get("/task/{task_id}/result", response_model=TaskResultResponse)
+async def get_task_result(
+    task_id: UUID,
+    user: User = Depends(get_current_user),
+):
+    # Get the task from database
+    task = await CalculationTask.get_or_none(uuid=task_id)
+    
+    if not task:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Task not found"
+        )
+    
+    # Check if user has access to this task
+    if task.user_id != user.uuid:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Not authorized to access this task"
+        )
+    
+    # Определяем тип задачи
+    task_type = TaskType.ORBIT_CALCULATION
+    if task.orbit_id and task.close_approach_id:
+        task_type = TaskType.CLOSEST_APPROACH
+    
+    # Получаем имя кометы, если есть
+    comet_name = None
+    if task.comet_id:
+        comet = await task.comet
+        comet_name = comet.name if comet else None
+    
+    # Подготавливаем результаты
+    orbit_result = None
+    closest_approach_result = None
+    
+    if task.status == "completed":
+        if task.orbit_id:
+            orbit = await task.orbit
+            if orbit:
+                orbit_result = OrbitResult(
+                    semi_major_axis=orbit.semi_major_axis,
+                    eccentricity=orbit.eccentricity,
+                    inclination=orbit.inclination,
+                    longitude_ascending_node=orbit.longitude_ascending_node,
+                    argument_periapsis=orbit.argument_periapsis,
+                    periapsis_time=orbit.periapsis_time
+                )
+        
+        if task.close_approach_id:
+            close_approach = await task.close_approach
+            if close_approach:
+                closest_approach_result = ClosestApproachResult(
+                    approach_time=close_approach.approach_time,
+                    distance_au=close_approach.distance_au,
+                    distance_km=close_approach.distance_km
+                )
+    
+    return TaskResultResponse(
+        task_id=task.uuid,
+        status=task.status,
+        task_type=task_type,
+        submitted_at=task.created_at,
+        completed_at=task.updated_at if task.status == "completed" else None,
+        orbit_result=orbit_result,
+        closest_approach_result=closest_approach_result,
+        comet_name=comet_name,
+        error_message=task.error_message
     )
 
 
