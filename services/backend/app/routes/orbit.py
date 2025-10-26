@@ -179,7 +179,7 @@ async def get_user_tasks(
         comet_name = None
         if task.comet_id:
             comet = await task.comet
-            comet_name = comet.name if comet else None
+            comet_name = comet.designation if comet else None
             
         task_item = TaskListItem(
             task_id=task.uuid,
@@ -224,7 +224,7 @@ async def get_task_result(
     comet_name = None
     if task.comet_id:
         comet = await task.comet
-        comet_name = comet.name if comet else None
+        comet_name = comet.designation if comet else None
     
     # Подготавливаем результаты
     orbit_result = None
