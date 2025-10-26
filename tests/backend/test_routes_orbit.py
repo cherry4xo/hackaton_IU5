@@ -6,10 +6,10 @@ import uuid
 from datetime import datetime
 from io import BytesIO
 
-from app.routes.orbit import router
-from app.utils.queue.schemas import OrbitCalculationRequest, Observation
-from app.models import CalculationTask, CalculationTaskStatus, Comets, User, Observations
-from app.utils.queue.queue import send_calculation_task
+from services.backend.app.routes.orbit import router
+from services.backend.app.utils.queue.schemas import OrbitCalculationRequest, Observation
+from services.backend.app.models import CalculationTask, CalculationTaskStatus, Comets, User, Observations
+from services.backend.app.utils.queue.queue import send_calculation_task
 
 
 @pytest.fixture

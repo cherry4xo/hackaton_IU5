@@ -11,8 +11,9 @@ async def send_calculation_task(task_id: str, user_id: str, request: OrbitCalcul
     message = {
         "task_id": task_id,
         "user_id": user_id,
-        "timestamp": datetime.utcnow().isoformat(),
-        "observations": [obs.dict() for obs in request.observations],
+        "timestamp": datetime.now().isoformat(),
+        "observations": [obs.model_dump() for obs in request.observations],
+        "image_reference": request.image_reference,  # Add image reference for the entire task
         "options": request.options or {}
     }
 

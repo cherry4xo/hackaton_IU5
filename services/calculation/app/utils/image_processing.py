@@ -4,7 +4,7 @@ from skimage.feature import blob_log
 from skimage.measure import regionprops
 import logging
 from typing import Optional, Tuple, Dict, List
-from .minio_client import get_minio_client
+from app.utils.minio_client import get_minio_client
 import io
 
 logger = logging.getLogger(__name__)

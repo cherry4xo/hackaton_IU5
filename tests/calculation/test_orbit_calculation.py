@@ -4,7 +4,9 @@ import numpy as np
 from unittest.mock import Mock, patch, MagicMock
 import warnings
 
-from app.utils.orbit_calculation import OrbitCalculator
+from astropy import units as u
+
+from services.calculation.app.utils.orbit_calculation import OrbitCalculator
 
 
 @pytest.fixture

@@ -3,8 +3,8 @@ from unittest.mock import Mock, patch, AsyncMock
 from datetime import datetime
 import uuid
 
-from app.utils.queue.queue import send_calculation_task
-from app.utils.queue.schemas import OrbitCalculationRequest, Observation
+from services.backend.app.utils.queue.queue import send_calculation_task
+from services.backend.app.utils.queue.schemas import OrbitCalculationRequest, Observation
 
 
 @pytest.fixture

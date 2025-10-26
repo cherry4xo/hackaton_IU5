@@ -19,7 +19,6 @@ router = APIRouter(prefix="/orbit")
 @router.post("/upload-image")
 async def upload_observation_image(
     file: UploadFile = File(...),
-    observation_uuid: Optional[str] = Form(None),
     user: User = Depends(get_current_user),
 ):
     # Validate file type
@@ -57,30 +56,13 @@ async def upload_observation_image(
             detail=f"Failed to upload image to storage: {str(e)}"
         )
     
-    # If observation_uuid is provided, update the observation with image info
-    observation = None
-    if observation_uuid:
-        try:
-            observation = await Observations.get_or_none(uuid=observation_uuid)
-            if observation:
-                observation.image_reference = object_name
-                observation.image_width = width
-                observation.image_height = height
-                observation.image_format = format
-                observation.image_size = len(image_data)
-                await observation.save()
-        except Exception as e:
-            # Log error but don't fail the upload
-            pass
-    
     return {
         "image_reference": object_name,
         "url": url,
         "width": width,
         "height": height,
         "format": format,
-        "size": len(image_data),
-        "observation_updated": observation is not None
+        "size": len(image_data)
     }
 
 

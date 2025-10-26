@@ -4,7 +4,7 @@ from minio.error import S3Error
 from PIL import Image
 import logging
 from typing import Optional, Tuple
-from ..settings import MINIO_ENDPOINT, MINIO_ACCESS_KEY, MINIO_SECRET_KEY, MINIO_BUCKET_NAME, MINIO_SECURE
+from app.settings import MINIO_ENDPOINT, MINIO_ACCESS_KEY, MINIO_SECRET_KEY, MINIO_BUCKET_NAME, MINIO_SECURE
 
 logger = logging.getLogger(__name__)
 

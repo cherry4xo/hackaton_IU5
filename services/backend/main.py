@@ -1,3 +1,4 @@
+from tortoise import Tortoise
 import uvicorn 
 
 from fastapi import FastAPI
@@ -5,7 +6,7 @@ from prometheus_fastapi_instrumentator import Instrumentator
 from fastapi.middleware.cors import CORSMiddleware
 from contextlib import asynccontextmanager
 
-from app.db import init
+from app.db import init, register_db, TORTOISE_ORM
 from app import settings
 from app.routes.users import router as users_router
 from app.routes.orbit import router as orbit_router
@@ -31,10 +32,13 @@ instrumentator = Instrumentator().instrument(app)
 main_app_lifespan = app.router.lifespan_context
 @asynccontextmanager
 async def lifespan_wrapper(app):
-    await init(app)
+    register_db(app)
+    await Tortoise.init(config=TORTOISE_ORM)
+    await Tortoise.generate_schemas(safe=True)
     instrumentator.expose(app)
     async with main_app_lifespan(app) as maybe_state:
         yield maybe_state
+    await Tortoise.close_connections()
 app.router.lifespan_context = lifespan_wrapper
 
 init_middlewares(app)

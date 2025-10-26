@@ -53,7 +53,7 @@ async def run_worker():
             result = await process_task(task_data)
 
             # Обновляем задачу
-            task.completed_at = datetime.now()
+            task.updated_at = datetime.now()
             task.status = result["status"]
 
             if result["status"] == "completed":

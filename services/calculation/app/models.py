@@ -74,7 +74,7 @@ class Observations(TimestampMixin, BaseModel):
     uuid = fields.UUIDField(pk=True)
     comet_id: fields.ForeignKeyRelation["Comets"] = fields.ForeignKeyField("models.Comets", related_name="comets", on_delete=fields.CASCADE, null=False)
     observatory_id: fields.ForeignKeyRelation["Observatories"] = fields.ForeignKeyField("models.Observatories", related_name="observatories", on_delete=fields.CASCADE, null=False)
-    observer_id: fields.ForeignKeyRelation["User"] = fields.ForeignKeyField("models.User", related_name="obsevres", on_delete = fields.CASCADE, null=False)
+    observer_id: fields.ForeignKeyRelation["User"] = fields.ForeignKeyField("models.User", related_name="observers", on_delete = fields.CASCADE, null=False)
     observation_time = fields.DatetimeField(null=False)
     # Параметры 
     ra_deg = fields.FloatField(null=False)

@@ -3,7 +3,7 @@ from datetime import datetime, timedelta
 from unittest.mock import AsyncMock, Mock, patch, MagicMock
 import uuid
 
-from app.calculator import process_task
+from services.calculation.app.calculator import process_task
 
 
 @pytest.mark.asyncio

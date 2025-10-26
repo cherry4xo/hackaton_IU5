@@ -4,7 +4,7 @@ import io
 from PIL import Image
 import logging
 
-from app.utils.minio_client import MinIOClient, get_minio_client
+from services.backend.app.utils.minio_client import MinIOClient, get_minio_client
 
 
 @pytest.fixture
@@ -322,8 +322,8 @@ def test_delete_image_error(mock_minio_client, caplog):
 def test_get_minio_client_singleton():
     """Test that get_minio_client returns the same instance."""
     # Reset the global instance
-    import app.utils.minio_client
-    app.utils.minio_client.minio_client = None
+    import services.backend.app.utils.minio_client
+    services.backend.backend_app.utils.minio_client.minio_client = None
     
     # Patch Minio class to avoid actual initialization
     with patch('app.utils.minio_client.Minio'):

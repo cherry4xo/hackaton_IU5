@@ -13,31 +13,47 @@ image_processor = get_image_processor()
 async def process_task(task_data: dict):
     task_id = task_data["task_id"]
     observations = task_data["observations"]
+    image_reference = task_data.get("image_reference")  # Get image reference for the entire task
     options = task_data.get("options", {})
 
-    # Process images in observations if available
-    processed_observations = []
-    for obs in observations:
-        processed_obs = obs.copy()
-        
-        # Check if observation has an image reference
-        if "image_reference" in obs and obs["image_reference"]:
-            try:
-                # Extract coordinates from image
-                coords = image_processor.extract_coordinates_from_image(
-                    obs["image_reference"]
-                )
+    # Process image for the entire task if available
+    processed_observations = observations.copy()
+    if image_reference:
+        try:
+            logger.info(f"Processing image for task {task_id}: {image_reference}")
+            
+            # Detect stars in the image
+            image = image_processor.download_image(image_reference)
+            stars = image_processor.detect_stars(image)
+            
+            if stars:
+                logger.info(f"Detected {len(stars)} stars in image {image_reference}")
                 
-                if coords:
-                    # Update observation with extracted coordinates
-                    processed_obs["ra"], processed_obs["dec"] = coords
-                    logger.info(f"Updated observation with coordinates from image: RA={coords[0]}, Dec={coords[1]}")
-                else:
-                    logger.warning(f"Failed to extract coordinates from image: {obs['image_reference']}")
-            except Exception as e:
-                logger.error(f"Error processing image {obs['image_reference']}: {e}")
-        
-        processed_observations.append(processed_obs)
+                # For now, we'll use the first detected star's position to update all observations
+                # In a more advanced implementation, we could match stars to specific observations
+                if stars:
+                    # Use the brightest star (assuming it's the first one)
+                    primary_star = stars[0]
+                    
+                    # Update all observations with coordinates derived from the image
+                    # This is a simplified approach - in reality, we'd need proper astrometric calibration
+                    for obs in processed_observations:
+                        # Extract coordinates from image using the star position
+                        coords = image_processor.extract_coordinates_from_image(
+                            image_reference,
+                            pixel_x=primary_star["x"],
+                            pixel_y=primary_star["y"]
+                        )
+                        
+                        if coords:
+                            obs["ra"], obs["dec"] = coords
+                            logger.info(f"Updated observation with coordinates from image: RA={coords[0]}, Dec={coords[1]}")
+                        else:
+                            logger.warning(f"Failed to extract coordinates from image: {image_reference}")
+            else:
+                logger.warning(f"No stars detected in image: {image_reference}")
+        except Exception as e:
+            logger.error(f"Error processing image {image_reference}: {e}")
 
     try:
         # 1. Расчёт орбиты

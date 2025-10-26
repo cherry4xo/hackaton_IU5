@@ -6,10 +6,10 @@ class Observation(BaseModel):
     observation_time: datetime
     ra: float
     dec: float
-    image_reference: Optional[str] = None
 
 class OrbitCalculationRequest(BaseModel):
     observations: List[Observation]
+    image_reference: Optional[str] = None
     options: Optional[dict] = {}
 
 class TaskResponse(BaseModel):

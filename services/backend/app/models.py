@@ -44,13 +44,6 @@ class User(TimestampMixin, BaseModel):
     password_hash = fields.CharField(max_length=255, null=True)
     registration_date = fields.DateField(auto_now_add=True)
     role = fields.CharEnumField(UserRole, default=UserRole.RESEARCHER, description="User role")
-
-    @classmethod
-    async def create(cls, user: UserCreate) -> "User":
-        user_dict = user.model_dump(exclude=["password"])
-        password_hash = password.get_password_hash(password=user.password)
-        model = cls(**user_dict, password_hash=password_hash, registration_date=date.today())
-        return model
     
     @classmethod
     async def get_by_uuid(cls, uuid: UUID4) -> "User":
@@ -110,7 +103,7 @@ class Observations(TimestampMixin, BaseModel):
     uuid = fields.UUIDField(pk=True)
     comet_id: fields.ForeignKeyRelation["Comets"] = fields.ForeignKeyField("models.Comets", related_name="comets_observations", on_delete=fields.CASCADE, null=False)
     observatory_id: fields.ForeignKeyRelation["Observatories"] = fields.ForeignKeyField("models.Observatories", related_name="observatories", on_delete=fields.CASCADE, null=False)
-    observer_id: fields.ForeignKeyRelation["User"] = fields.ForeignKeyField("models.User", related_name="obsevres", on_delete = fields.CASCADE, null=False)
+    observer_id: fields.ForeignKeyRelation["User"] = fields.ForeignKeyField("models.User", related_name="observers", on_delete = fields.CASCADE, null=False)
     observation_time = fields.DatetimeField(null=False)
     # Параметры 
     ra_deg = fields.FloatField(null=False)
@@ -118,13 +111,6 @@ class Observations(TimestampMixin, BaseModel):
     altitude_deg = fields.FloatField(null=False)
     azimuth_deg = fields.FloatField(null=False)
     processed = fields.BooleanField(default=False)
-    
-    # Image fields
-    image_reference = fields.CharField(max_length=255, null=True)
-    image_width = fields.IntField(null=True)
-    image_height = fields.IntField(null=True)
-    image_format = fields.CharField(max_length=10, null=True)
-    image_size = fields.BigIntField(null=True)
 
     @classmethod
     async def create(cls, observ: CreateObservations) -> "Observations":

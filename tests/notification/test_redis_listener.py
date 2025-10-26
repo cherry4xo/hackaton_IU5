@@ -3,7 +3,7 @@ from unittest.mock import Mock, patch, AsyncMock, MagicMock
 from datetime import datetime
 import json
 
-from app.redis_listener import listen_to_results
+from services.notification.app.redis_listener import listen_to_results
 
 
 @pytest.mark.asyncio

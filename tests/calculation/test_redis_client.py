@@ -6,7 +6,7 @@ from unittest.mock import Mock, patch
 with patch('redis.asyncio.Redis') as mock_redis_class:
     mock_redis_instance = Mock()
     mock_redis_class.return_value = mock_redis_instance
-    from app.utils.redis_client import redis_client
+    from services.calculation.app.utils.redis_client import redis_client
 
 
 def test_redis_client_initialization():

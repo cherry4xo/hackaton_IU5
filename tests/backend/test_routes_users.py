@@ -3,11 +3,11 @@ from unittest.mock import Mock, patch, AsyncMock, MagicMock
 from fastapi import HTTPException
 import uuid
 
-from app.routes.users import router
-from app.schemas import UserCreate, UserCreated, UserGet, UserChangePasswordIn, UserGrantPrivileges
-from app.models import User
-from app.services.users import create_user, change_password, grant_user, update_profile
-from app.utils.contrib import get_current_user, get_current_admin
+from services.backend.app.routes.users import router
+from services.backend.app.schemas import UserCreate, UserCreated, UserGet, UserChangePasswordIn, UserGrantPrivileges
+from services.backend.app.models import User
+from services.backend.app.services.users import create_user, change_password, grant_user
+from services.backend.app.utils.contrib import get_current_user, get_current_admin
 
 
 @pytest.fixture

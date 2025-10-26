@@ -2,7 +2,7 @@ import pytest
 from unittest.mock import Mock, AsyncMock
 from fastapi import WebSocket
 
-from app.connections import ConnectionManager
+from services.notification.app.connections import ConnectionManager
 
 
 @pytest.fixture

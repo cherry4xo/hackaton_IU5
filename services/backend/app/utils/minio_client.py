@@ -10,14 +10,20 @@ logger = logging.getLogger(__name__)
 
 class MinIOClient:
     def __init__(self):
-        self.client = Minio(
-            MINIO_ENDPOINT,
-            access_key=MINIO_ACCESS_KEY,
-            secret_key=MINIO_SECRET_KEY,
-            secure=MINIO_SECURE
-        )
+        self._client = None
         self.bucket_name = MINIO_BUCKET_NAME
         self._ensure_bucket_exists()
+
+    @property
+    def client(self):
+        if self._client is None:
+            self._client = Minio(
+                MINIO_ENDPOINT,
+                access_key=MINIO_ACCESS_KEY,
+                secret_key=MINIO_SECRET_KEY,
+                secure=MINIO_SECURE
+            )
+        return self._client
     
     def _ensure_bucket_exists(self):
         """Ensure the bucket exists, creating it if necessary."""
@@ -127,7 +133,4 @@ minio_client: Optional[MinIOClient] = None
 
 def get_minio_client() -> MinIOClient:
     """Get or create the global MinIO client instance."""
-    global minio_client
-    if minio_client is None:
-        minio_client = MinIOClient()
-    return minio_client
+    return MinIOClient()

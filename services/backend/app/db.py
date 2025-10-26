@@ -38,99 +38,81 @@ MODELS_MIGRATION_PATH = os.path.join(AERICH_COMMAND.location, AERICH_COMMAND.app
 
 def register_db(app: FastAPI, db_url: str = None) -> None:
     db_url = db_url or settings.DB_URL
-    app_list = ["app.models", "aerich.models"]
+    # Update the DB connection URL dynamically if needed
+    TORTOISE_ORM["connections"]["default"] = db_url  # ← Important: ensure connection is set
+
     register_tortoise(
         app,
         config=TORTOISE_ORM,
-        generate_schemas=True,
-        add_exception_handlers=True
+        generate_schemas=False,  # ← Disable auto schema creation! Let Aerich handle it
+        add_exception_handlers=True,
     )
 
 async def upgrade_db(app: FastAPI, db_url: str = None):
     """
-    Initializes Aerich and applies any pending migrations.
-    Should be run during application startup.
+    Initializes Aerich and applies pending migrations.
+    Must be called AFTER Tortoise is registered.
     """
-    global AERICH_COMMAND
-    logger.info("Initializing database and applying migrations...")
-    logger.debug("Using Aerich config: %s", TORTOISE_ORM)
-    logger.debug("Migrations base location: %s", AERICH_COMMAND.location)
-    logger.debug("App-specific migration path: %s", MODELS_MIGRATION_PATH)
-    logger.debug("Current working directory: %s", os.getcwd())
+    db_url = db_url or settings.DB_URL
+
+    # 🔧 Rebuild config dynamically
+    config = {
+        "connections": {"default": db_url},
+        "apps": {
+            "models": {
+                "models": ["app.models", "aerich.models"],
+                "default_connection": "default"
+            }
+        }
+    }
+
+    location = "./migrations"
+    os.makedirs(location, exist_ok=True)
+
+    # 🆕 Create a FRESH Command instance (never reuse globally!)
+    command = Command(tortoise_config=config, app="models", location=location)
 
     try:
+        # Step 1: Initialize Aerich metadata (creates aerich table)
+        logger.info("Initializing Aerich metadata (aerich table)...")
         try:
-            os.makedirs(AERICH_COMMAND.location, exist_ok=True)
-            logger.info(f"Ensured base migration directory exists: {AERICH_COMMAND.location}")
-        except OSError as e:
-            logger.error(f"Could not create base migration directory {AERICH_COMMAND.location}: {e}", exc_info=True)
-            raise
+            await command.init_db(safe=True)
+            logger.info("Aerich metadata initialized.")
+        except FileExistsError:
+            logger.info("Aerich metadata already initialized.")
 
-        # Try to initialize the Aerich schema tracking table
-        # This should only be needed once, but we handle the case where it already exists
-        logger.info("Attempting to initialize Aerich schema tracking table...")
-        try:
-            await AERICH_COMMAND.init_db(safe=True)
-            logger.info("Aerich schema tracking table initialized.")
-        except FileExistsError as e:
-            logger.info("Aerich schema tracking table already exists, continuing...")
-        except Exception as init_db_exc:
-            logger.warning(f"Non-critical error during 'aerich init-db': {init_db_exc}", exc_info=True)
-            # Continue anyway as the table might already exist
-
-        # Ensure migration directory exists
-        if not os.path.exists(MODELS_MIGRATION_PATH):
-            logger.info("Creating migration directory...")
-            try:
-                await AERICH_COMMAND.init()
-                logger.info("Migration directory created.")
-            except Exception as init_exc:
-                logger.warning(f"Error during 'aerich init': {init_exc}", exc_info=True)
+        # Step 2: Ensure migration folder exists
+        models_migrations_dir = os.path.join(location, "models")
+        if not os.path.exists(models_migrations_dir):
+            logger.info("Creating migration directory for models...")
+            await command.init()
+            logger.info(f"Migration directory created at {models_migrations_dir}")
         else:
-            logger.info(f"Migration directory already exists: {MODELS_MIGRATION_PATH}")
+            logger.info(f"Migration directory already exists: {models_migrations_dir}")
 
-        # Check if there are any migration files before attempting upgrade
-        migration_files = []
-        if os.path.exists(MODELS_MIGRATION_PATH):
-            migration_files = [f for f in os.listdir(MODELS_MIGRATION_PATH) if f.endswith('.py') and f != '__init__.py']
-        
-        if migration_files:
-            logger.info(f"Found {len(migration_files)} migration files, applying...")
-            # Apply any pending migrations
-            logger.info("Running 'aerich upgrade' to apply pending migrations...")
-            try:
-                await AERICH_COMMAND.upgrade(run_in_transaction=True)
-                logger.info("'aerich upgrade' finished successfully.")
-                logger.info("Database migrations applied successfully.")
-            except aerich_exceptions.DowngradeError as e:
-                logger.error(f"Downgrade error during migration: {e}", exc_info=True)
-                raise
-            except AttributeError as attr_err:
-                if "'Migrate' object has no attribute 'migrate_location'" in str(attr_err):
-                    logger.error("Aerich migration error: migrate_location attribute missing. This may indicate a version incompatibility.", exc_info=True)
-                    # Try to recreate the migration setup
-                    logger.info("Attempting to reset Aerich migration state...")
-                    try:
-                        # Recreate the command instance
-                        AERICH_COMMAND = Command(tortoise_config=TORTOISE_ORM, app="models", location=MIGRATION_LOCATION)
-                        await AERICH_COMMAND.upgrade(run_in_transaction=True)
-                        logger.info("Retry of 'aerich upgrade' finished successfully.")
-                        logger.info("Database migrations applied successfully.")
-                    except Exception as retry_err:
-                        logger.error(f"Retry of 'aerich upgrade' also failed: {retry_err}", exc_info=True)
-                        raise
-                else:
-                    logger.error(f"Attribute error during 'aerich upgrade': {attr_err}", exc_info=True)
-                    raise
-            except Exception as upgrade_exc:
-                logger.error(f"Error during 'aerich upgrade': {upgrade_exc}", exc_info=True)
-                raise
-        else:
-            logger.info("No migration files found, skipping upgrade step.")
+        # Step 3: Run pending migrations
+        migration_files = [
+            f for f in os.listdir(models_migrations_dir)
+            if f.endswith(".py") and f != "__init__.py"
+        ]
+        if not migration_files:
+            logger.info("No migration files found. Skipping upgrade.")
+            return
 
+        logger.info(f"Applying {len(migration_files)} migration(s)...")
+        await command.upgrade(run_in_transaction=True)
+        logger.info("✅ All migrations applied successfully.")
+
+    except AttributeError as e:
+        if "migrate_location" in str(e):
+            logger.critical(
+                "Aerich error: 'Migrate.migrate_location' is missing. "
+                "This usually happens if Command() is created too early or reused. "
+                "Ensure you're creating a fresh Command() after DB config is ready."
+            )
+        raise
     except Exception as e:
-        logger.critical("Failed to apply database migrations due to an unexpected error.", exc_info=True)
-        print(f"FATAL: Failed to apply migrations: {e}")
+        logger.critical(f"Migration failed: {e}", exc_info=True)
         raise
 
 async def create_default_moderator_user() -> None:
@@ -163,7 +145,7 @@ async def create_default_moderator_user() -> None:
 
 
 async def init(app: FastAPI):
+    # register_db(app)
     # await upgrade_db(app)
-    register_db(app)
     logger.debug("Connected to db")
-    # await create_default_moderator_user()
+    await create_default_moderator_user()

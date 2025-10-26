@@ -28,15 +28,15 @@ DEFAULT_MODERATOR_USERNAME = os.getenv("DEFAULT_MODERATOR_USERNAME", default="mo
 DEFAULT_MODERATOR_EMAIL = os.getenv("DEFAULT_MODERATOR_EMAIL", default="moderator@example.com")
 DEFAULT_MODERATOR_PASSWORD = os.getenv("DEFAULT_MODERATOR_PASSWORD", default="password")
 
-LOGIN_URL = f"http://0.0.0.0:8080/login/access-token"
+LOGIN_URL = f"http://0.0.0.0:8080/backend/users/access-token"
 
 MODE = os.getenv("MODE", default="DEBUG")
 
 ACCESS_TOKEN_EXPIRE_MINUTES = 60 * 24 * 14 # change in release to 15 minutes
 REFRESH_TOKEN_EXPIRE_MINUTES = 60 * 24 * 14 # 2 weeks
 
-REDIS_HOST = os.getenv("REDIS_HOST")
-REDIS_PORT = os.getenv("REDIS_PORT")
+REDIS_HOST = os.getenv("REDIS_HOST", "redis")
+REDIS_PORT = os.getenv("REDIS_PORT", "6379")
 REDIS_PASSWORD = os.getenv("REDIS_PASSWORD", "")
 
 # MinIO Configuration

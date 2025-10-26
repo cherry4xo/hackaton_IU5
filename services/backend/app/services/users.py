@@ -1,15 +1,18 @@
-from fastapi import HTTPException, Depends
+from datetime import date, timedelta
+from fastapi import HTTPException, Depends, Security
+from fastapi.security import OAuth2PasswordRequestForm
 from pydantic import UUID4
 from tortoise.exceptions import IntegrityError
 
-from app.schemas import UserCreate, UserChangePasswordIn, UserGrantPrivileges
+from app.schemas import CredentialsSchema, RefreshToken, UserCreate, UserChangePasswordIn, UserGrantPrivileges
 from app.models import User
 from app.enums import UserRole
 from app.utils import password
-from app.utils.contrib import get_current_user
+from app.utils.contrib import authenticate, get_current_user, validate_refresh_token, reusable_oauth2
 from app.logger import log_calls
 
-from app import metrics
+from app import settings
+from app.utils.jwt import create_access_token, create_refresh_token
 
 @log_calls
 async def create_user(user: UserCreate):
@@ -29,11 +32,13 @@ async def create_user(user: UserCreate):
             detail="The user with this username already exists"
         )
     
-        user_db = await User.create(user=user)
+    password_hash = password.get_password_hash(password=user.password)
+    user_dict = user.model_dump(exclude=["password"])
 
-        metrics.backend_user_registrations_total.inc()
+    user_db = await User.create(**user_dict, password_hash=password_hash, registration_date=date.today())
 
-        return user_db
+    # metrics.backend_user_registrations_total.inc()
+    return user_db
 
 
 @log_calls
@@ -44,15 +49,12 @@ async def change_password(
     verified, updated_password_hash = password.verify_and_update_password(change_password_in.current_password, 
                                                                           current_user.password_hash)
     if not verified:
-        metrics.backend_user_password_changes_total.labels(status="failure").inc()
         raise HTTPException(
             status_code=401,
             detail="Entered current password is incorrect"
         )
 
     current_user.password_hash = password.get_password_hash(change_password_in.new_password)
-
-    metrics.backend_user_password_changes_total.labels(status="success").inc()
 
     await current_user.save()
 
@@ -78,9 +80,79 @@ async def grant_user(user_uuid: UUID4, user_grant: UserGrantPrivileges):
     user.role = target_role
     try:
         await user.save(update_fields=['role'])
-        metrics.backend_user_role_changes_total.labels(target_role=target_role.value).inc()
     except Exception as e:
          print(f"Error saving new role for user {user.username}: {e}")
          raise HTTPException(status_code=500, detail="Failed to save user role.")
 
     return user
+
+
+@log_calls
+async def get_access_token(credentials: OAuth2PasswordRequestForm = Depends()):
+    credentials = CredentialsSchema(email=credentials.username, password=credentials.password)
+    user = await authenticate(credentials=credentials)
+
+    if not user:
+        raise HTTPException(
+            status_code=400,
+            detail="incorrect email or password"
+        )
+    
+    access_token_expires = timedelta(minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES)
+    refresh_token_expires = timedelta(minutes=settings.REFRESH_TOKEN_EXPIRE_MINUTES)
+
+    return {
+        "access_token": create_access_token(data={"user_uuid": str(user.uuid)}, expires_delta=access_token_expires),
+        "refresh_token": create_refresh_token(data={"user_uuid": str(user.uuid)}, expires_delta=refresh_token_expires),
+        "token_type": "bearer"
+    }
+
+
+@log_calls
+async def login_refresh_token(credentials: OAuth2PasswordRequestForm = Depends()):
+    credentials = CredentialsSchema(email=credentials.username, password=credentials.password)
+    user = await authenticate(credentials=credentials)
+
+    if not user:
+        raise HTTPException(
+            status_code=400,
+            detail="Incorrect email or password"
+        )
+    refresh_token_expires = timedelta(minutes=settings.JWT_REFRESH_TOKEN_EXPIRE_MINUTES)
+
+    return {
+        "refresh_token": create_refresh_token(data={"user_uuid": str(user.uuid)}, expires_delta=refresh_token_expires),
+        "token_type": "bearer"
+    }
+
+
+@log_calls
+async def refresh_token(
+    token: RefreshToken
+):
+    access_token_expires = timedelta(minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES)
+    user = await validate_refresh_token(token=token.refresh_token)
+
+    if user is None:
+        raise HTTPException(
+            status_code=401,
+            detail="The user with uuid in token does not exist"
+        )
+
+    new_access_token = create_access_token(data={"user_uuid": str(user.uuid), "expires_delta": access_token_expires})
+
+    return {
+        "access_token": new_access_token,
+        "token_type": "bearer"
+    }
+
+
+@log_calls
+async def validate_access_token(
+    token: str = Security(reusable_oauth2)
+):
+    try:
+        user = await get_current_user(token=token)
+        return user
+    except HTTPException as e:
+        raise e 

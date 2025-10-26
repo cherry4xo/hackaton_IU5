@@ -3,7 +3,7 @@ from unittest.mock import Mock, patch, AsyncMock, MagicMock
 from datetime import datetime
 import json
 
-from app.worker import run_worker
+from services.calculation.app.worker import run_worker
 
 
 @pytest.mark.asyncio

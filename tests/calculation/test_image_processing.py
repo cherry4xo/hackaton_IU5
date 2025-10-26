@@ -5,7 +5,7 @@ from PIL import Image
 import io
 import logging
 
-from app.utils.image_processing import ImageProcessor, get_image_processor
+from services.calculation.app.utils.image_processing import ImageProcessor, get_image_processor
 
 
 @pytest.fixture
@@ -220,8 +220,8 @@ def test_extract_coordinates_from_image_download_failure(mock_minio_client, capl
 def test_get_image_processor_singleton():
     """Test that get_image_processor returns the same instance."""
     # Reset the global instance
-    import app.utils.image_processing
-    app.utils.image_processing.image_processor = None
+    import services.calculation.app.utils.image_processing
+    services.calculation.app.utils.image_processing.image_processor = None
     
     # Get two instances
     processor1 = get_image_processor()
