@@ -28,7 +28,7 @@ DEFAULT_MODERATOR_USERNAME = os.getenv("DEFAULT_MODERATOR_USERNAME", default="mo
 DEFAULT_MODERATOR_EMAIL = os.getenv("DEFAULT_MODERATOR_EMAIL", default="moderator@example.com")
 DEFAULT_MODERATOR_PASSWORD = os.getenv("DEFAULT_MODERATOR_PASSWORD", default="password")
 
-LOGIN_URL = f"/users/access-token"
+LOGIN_URL = os.getenv("LOGIN_URL", default="/users/access-token")
 
 MODE = os.getenv("MODE", default="DEBUG")
 
