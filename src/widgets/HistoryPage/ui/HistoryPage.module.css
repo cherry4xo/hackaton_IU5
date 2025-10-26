@@ -1,0 +1,143 @@
+/* ---- Контейнер контента ---- */
+.container {
+    max-width: 900px;
+    margin: 0 auto; /* Центрирование блока с контентом */
+    padding: 2rem 1rem; /* Отступы сверху/снизу и по бокам */
+}
+
+/* ---- Хлебные крошки (Breadcrumbs) ---- */
+.breadcrumbs {
+    color: #8e8e93; /* Тусклый цвет текста */
+    margin-bottom: 1.5rem;
+}
+
+.breadcrumbs a {
+    color: #ffffff;
+    text-decoration: none;
+    transition: color 0.3s;
+}
+
+.breadcrumbs a:hover {
+    color: #b0b0b0;
+}
+
+/* ---- Временная шкала (Timeline) ---- */
+.timeline {
+    position: relative;
+    /* Отступ слева, чтобы освободить место для вертикальной линии и дат */
+    padding-left: 5rem; 
+}
+
+/* Вертикальная линия */
+.timeline::before {
+    content: '';
+    position: absolute;
+    left: 20px; /* Позиция линии */
+    top: 5rem;   /* Начинается ниже кнопки */
+    bottom: 3rem;/* Заканчивается выше "Конца истории" */
+    width: 1px;
+    background-color: #3a3a3c;
+}
+
+/* ---- Кнопка фильтра по дате ---- */
+.dateRange {
+    background-color: #4a5cff;
+    color: #ffffff;
+    border: none;
+    border-radius: 8px;
+    padding: 0.75rem 1.25rem;
+    font-size: 1rem;
+    font-family: inherit; /* Наследуем шрифт */
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    /* Смещаем кнопку влево, чтобы она была на одной линии с датами */
+    margin-left: -5rem; 
+    margin-bottom: 2.5rem;
+    transition: background-color 0.3s;
+}
+
+.dateRange:hover {
+    background-color: #3a4cdd;
+}
+
+
+/* ---- Группа элементов на шкале ---- */
+.timelineGroup {
+    position: relative;
+    padding-bottom: 1.5rem;
+}
+
+/* Круглая точка на вертикальной линии */
+.timelineGroup::before {
+    content: '';
+    position: absolute;
+    left: -4.2rem; /* Совмещаем с линией */
+    top: 0.5rem;   /* Выравниваем по вертикали с карточкой */
+    width: 9px;
+    height: 9px;
+    background-color: #3a3a3c;
+    border-radius: 50%;
+    z-index: 2; /* Отображаем над линией */
+}
+
+/* Дата слева от линии */
+.timelineDate {
+    position: absolute;
+    left: -5rem; /* Левее линии */
+    top: 0.2rem;
+    transform: translateX(-100%); /* Гарантирует, что текст будет слева от точки */
+    color: #8e8e93;
+    white-space: nowrap;
+    font-size: 0.9rem;
+}
+
+.timelineItem {
+    margin-bottom: 0.75rem;
+}
+.timelineItem:last-child {
+    margin-bottom: 0;
+}
+
+/* ---- Карточки наблюдений ---- */
+.card {
+    background-color: rgba(30, 30, 32, 0.8); /* Полупрозрачный фон */
+    border: 1px solid #2a2a2c;
+    backdrop-filter: blur(5px); /* Эффект размытия фона под карточкой */
+    border-radius: 12px;
+    padding: 1.5rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.cardContent h3 {
+    margin: 0 0 0.25rem 0;
+    font-size: 1.25rem;
+    font-weight: 500;
+}
+
+.cardContent p {
+    margin: 0;
+    color: #8e8e93;
+    font-size: 0.9rem;
+}
+
+.cardAction {
+    color: #4a5cff;
+    text-decoration: none;
+    font-size: 1rem;
+    font-weight: 500;
+    transition: color 0.3s;
+}
+.cardAction:hover {
+    color: #6a7cff;
+}
+
+/* ---- Конец истории ---- */
+.endOfHistory {
+    text-align: center;
+    color: #8e8e93;
+    padding: 2rem 0;
+}

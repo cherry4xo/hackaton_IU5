@@ -32,7 +32,10 @@ const Header: React.FC<HeaderProps> = ({ onUserIconClick }) => {
       
       {/* Иконки действий пользователя */}
       <div className={styles.userActions}>
-        <FiClock size={20} className={styles.icon} />
+        
+        <Link to="/history" className={styles.iconLink} title="История наблюдений">
+          <FiClock size={20} />
+        </Link>
         
         {/* 
           Условный рендеринг:
