@@ -1,14 +1,11 @@
 import React, { Suspense } from 'react';
 import styles from './HeroSection.module.css';
-import DynamicSpheres from './DynamicSpheres';
+import DynamicSpheres from '../../MainLayout/ui/DynamicSpheres';
 import { Button } from '../../../shared/ui/Button';
 
 const HeroSection: React.FC = () => {
   return (
     <div className={styles.hero}>
-      <Suspense fallback={null}>
-        <DynamicSpheres />
-      </Suspense>
       <div className={styles.content}>
         <h1 className={styles.title}>cometrak 2.0</h1>
         <p className={styles.description}>

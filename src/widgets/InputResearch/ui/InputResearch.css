@@ -26,7 +26,7 @@
   align-items: flex-start;
 }
 
-/* --- ЛЕВАЯ КОЛОНКА (СЕКЦИЯ ВВОДА) --- */
+/* --- ЛЕВАЯ КОЛОНКА --- */
 .input-section {
   flex: 2;
   min-width: 0;
@@ -34,55 +34,44 @@
   flex-direction: column;
 }
 
-/* --- ПРАВАЯ КОЛОНКА (ЗАГРУЗКА ФАЙЛОВ) --- */
+/* --- ПРАВАЯ КОЛОНКА --- */
 .file-upload-section {
   flex: 1;
   min-width: 0;
 }
 
-/*
- =======================================================
-  КЛЮЧЕВЫЕ ИСПРАВЛЕНИЯ В ВЕРСТКЕ СТРОК И ЗАГОЛОВКОВ
- =======================================================
-*/
-
-/* --- Заголовки над полями ввода (ИСПРАВЛЕНО) --- */
+/* --- Заголовки над полями ввода --- */
 .observations-header {
-  display: flex; /* Используем Flexbox для точного выравнивания */
+  display: flex;
   align-items: center;
-  gap: 10px; /* Тот же отступ, что и в строках */
+  gap: 10px;
   color: rgba(255, 255, 255, 0.6);
   font-size: 12px;
   margin-bottom: 8px;
-  padding: 0 8px; /* Тот же горизонтальный паддинг, что и у .observation-row */
+  padding: 0 8px;
 }
-/* "Пустышка" для выравнивания с номером строки */
 .observations-header::before {
   content: '';
-  width: 36px; /* Ширина .row-number */
+  width: 36px;
   flex-shrink: 0;
 }
 .observations-header span {
   flex: 1;
-  min-width: 0; /* Позволяет тексту сжиматься */
+  min-width: 0;
   text-align: center;
 }
-/* "Пустышка" для выравнивания с кнопкой удаления */
 .observations-header::after {
   content: '';
-  width: 36px; /* Ширина .delete-row-button */
+  width: 36px;
   flex-shrink: 0;
 }
 
-
-/* Список строк с инпутами */
+/* --- Список и строки --- */
 .observations-list {
   display: flex;
   flex-direction: column;
   gap: 10px;
 }
-
-/* Одна строка с инпутами (ИСПРАВЛЕНО) */
 .observation-row {
   display: flex;
   align-items: center;
@@ -92,12 +81,11 @@
   padding: 8px;
   border: 1px solid transparent;
   transition: border-color 0.2s;
+  margin-bottom: 10px; /* Для ошибок */
 }
 .observation-row:hover {
   border-color: rgba(255, 255, 255, 0.3);
 }
-
-/* Номер строки */
 .row-number {
   background-color: #4c28bd;
   color: white;
@@ -111,7 +99,12 @@
   flex-shrink: 0;
 }
 
-/* Поле ввода (ИСПРАВЛЕНО) */
+/* --- Поля ввода --- */
+.input-wrapper {
+  position: relative;
+  flex: 1;
+  min-width: 0;
+}
 .obs-input {
   flex: 1;
   background: none;
@@ -120,13 +113,42 @@
   font-size: 16px;
   padding: 8px;
   text-align: center;
-  min-width: 0; /* Ключевое свойство! Позволяет инпутам правильно сжиматься */
+  min-width: 0;
+  width: 100%;
 }
 .obs-input:focus {
   outline: none;
 }
+.obs-input.input-error {
+  border: 1px solid #ff4d4d;
+  background-color: rgba(255, 77, 77, 0.1);
+  border-radius: 6px;
+}
+.field-error-message {
+  position: absolute;
+  bottom: -16px;
+  left: 0;
+  right: 0;
+  color: #ff4d4d;
+  font-size: 11px;
+  text-align: center;
+}
 
-/* Кнопка "Удалить строку" */
+/* --- Кнопки +/- --- */
+.add-row-button {
+  background: none;
+  border: 2px dashed rgba(255, 255, 255, 0.3);
+  color: rgba(255, 255, 255, 0.6);
+  border-radius: 12px;
+  padding: 12px;
+  cursor: pointer;
+  margin-top: 15px;
+  transition: all 0.2s;
+}
+.add-row-button:hover {
+  border-color: #8A2BE2;
+  color: white;
+}
 .delete-row-button {
   background-color: #4c28bd;
   color: white;
@@ -143,33 +165,13 @@
   background-color: #ff4d4d;
 }
 
-
-/*
- =======================================================
-  ОСТАЛЬНЫЕ СТИЛИ (без изменений)
- =======================================================
-*/
-
-.add-row-button {
-  background: none;
-  border: 2px dashed rgba(255, 255, 255, 0.3);
-  color: rgba(255, 255, 255, 0.6);
-  border-radius: 12px;
-  padding: 12px;
-  cursor: pointer;
-  margin-top: 15px;
-  transition: all 0.2s;
-}
-.add-row-button:hover {
-  border-color: #8A2BE2;
-  color: white;
-}
-
+/* --- СТИЛИ ДЛЯ ЗОНЫ ЗАГРУЗКИ ФАЙЛОВ (ВОССТАНОВЛЕНО) --- */
 .file-drop-zone {
   border: 2px dashed rgba(255, 255, 255, 0.3);
   border-radius: 16px;
   padding: 20px;
   height: 100%;
+  min-height: 200px;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -194,7 +196,6 @@
   color: rgba(255, 255, 255, 0.6);
   margin-top: 5px;
 }
-
 .image-preview-container {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
@@ -207,9 +208,10 @@
   border-radius: 8px;
 }
 
+/* --- СТИЛИ ДЛЯ КНОПКИ "РАССЧИТАТЬ" (ВОССТАНОВЛЕНО) --- */
 .calculate-button {
   width: 100%;
-  background-color: #5C49FF;
+  background-color: #8A2BE2;
   color: white;
   font-weight: 600;
   padding: 16px 0;
@@ -218,5 +220,5 @@
   margin-top: 30px;
 }
 .calculate-button:hover:not(.disabled) {
-  background-color: #5C49FF;
+  background-color: #7b24ca;
 }

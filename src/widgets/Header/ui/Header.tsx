@@ -1,8 +1,17 @@
+// src/widgets/Header/ui/Header.tsx
+
 import React from 'react';
 import { FiClock, FiUser } from 'react-icons/fi';
 import { Link } from 'react-router-dom';
 import styles from './Header.module.css';
-const Header: React.FC = () => {
+
+// 1. Интерфейс для props (здесь все было правильно)
+interface HeaderProps {
+  onUserIconClick: () => void;
+}
+
+// 2. ИСПРАВЛЕНИЕ: Используем правильное имя переменной без дефиса
+const Header: React.FC<HeaderProps> = ({ onUserIconClick }) => {
   return (
     <header className={styles.header}>
       <div className={styles.logo}>
@@ -14,9 +23,9 @@ const Header: React.FC = () => {
       </nav>
       <div className={styles.userActions}>
         <FiClock size={20} className={styles.icon} />
-        <Link to="/login">
-          <FiUser size={20} className={styles.icon} />
-        </Link>
+        <button onClick={onUserIconClick} className={styles.iconButton}>
+          <FiUser size={20} />
+        </button>
       </div>
     </header>
   );
