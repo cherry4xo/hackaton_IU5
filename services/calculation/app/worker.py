@@ -66,35 +66,31 @@ async def handle_orbit_calculation(task_data: dict, task: CalculationTask) -> Di
 
 
 async def handle_closest_approach(task_data: dict, task: CalculationTask) -> Dict[str, Any]:
-    """Handle closest approach calculation task and save results to database."""
     result = await calculate_closest_approach_task(task_data)
     
-    # Обновляем задачу
     task.updated_at = datetime.now()
     task.status = result["status"]
 
     if result["status"] == "completed":
-        # Получаем comet и orbit
-        comet = await task.comet if task.comet_id else None
+        comet = task.comet
         orbit = task.orbit
         
-        # Проверяем, что у нас есть необходимые данные
         if not comet or not orbit:
             raise ValueError("Cannot create Close_approaches without comet and orbit")
         
-        # Создаём Close_approaches
         ca_result = result["result"]["closest_approach"]
         ca = await Close_approaches.create(
             comet=comet,
+            orbit=orbit,
             approach_time=ca_result["time"],
             distance_au=ca_result["distance_au"],
-            distance_km=ca_result["distance_km"],
-            orbit=orbit
+            distance_km=ca_result["distance_km"]
         )
         task.close_approach = ca
     else:
         task.error_message = result["error"]
 
+    # Сохраняем задачу
     await task.save()
     return result
 
@@ -135,7 +131,7 @@ async def process_single_task(queue_name: str, task_type: CalculationTaskType, l
         task_id = task_data["task_id"]
 
         # Находим задачу в БД
-        task = await CalculationTask.get_or_none(uuid=task_id)
+        task = await CalculationTask.get_or_none(uuid=task_id).prefetch_related('comet', 'orbit')
         if not task:
             logger.info(f"Not found task {task_id} in DB")
             return (stream, msg_id)

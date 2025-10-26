@@ -125,7 +125,10 @@ class OrbitCalculator:
         computed_ra = np.array(computed_ra)
         computed_dec = np.array(computed_dec)
 
-        ra_diff = (computed_ra - obs_ra + 180) % 360 - 180
+        # Более точное вычисление разницы углов RA с учетом цикличности
+        ra_diff = computed_ra - obs_ra
+        # Корректируем разницу, учитывая цикличность (0-360 градусов)
+        ra_diff = (ra_diff + 180) % 360 - 180
         dec_diff = computed_dec - obs_dec
 
         residuals = np.hstack([ra_diff, dec_diff])
@@ -283,6 +286,7 @@ class OrbitCalculator:
             else:
                 a_val = a * u.AU
 
+            # Создаем орбиту с использованием времени перигелия как эпохи и nu=0
             orbit = Orbit.from_classical(
                 attractor=Sun,
                 a=a_val,
@@ -290,7 +294,7 @@ class OrbitCalculator:
                 inc=orbit_elements["inclination"] * u.deg,
                 raan=orbit_elements["longitude_ascending_node"] * u.deg,
                 argp=orbit_elements["argument_periapsis"] * u.deg,
-                nu=0 * u.deg,
+                nu=0 * u.deg,  # nu=0, потому что эпоха - это время перигелия
                 epoch=Time(orbit_elements["periapsis_time"])
             )
         except Exception as e:
@@ -306,19 +310,23 @@ class OrbitCalculator:
 
         with solar_system_ephemeris.set("de440s"):
             try:
+                # Распространяем орбиту на все временные точки
                 cartesian = orbit.propagate(times)
                 r_comet_list = cartesian.cartesian.xyz.T
                 r_comet_list = r_comet_list * u.km
 
+                # Получаем позиции Земли для всех временных точек
                 r_earth_list = []
                 for t in times:
                     r = get_body_barycentric("earth", t)
                     r_earth_list.append([r.x.to(u.km).value, r.y.to(u.km).value, r.z.to(u.km).value])
                 r_earth_list = np.array(r_earth_list) * u.km
 
+                # Вычисляем векторы разности и расстояния
                 r_diff = r_comet_list - r_earth_list
                 distances_au = np.linalg.norm(r_diff, axis=1) * u.km.to(u.AU)
 
+                # Находим минимальное расстояние
                 idx_min = np.argmin(distances_au)
                 min_distance_au = float(distances_au[idx_min])
                 closest_time = times[idx_min].datetime

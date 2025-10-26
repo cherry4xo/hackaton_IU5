@@ -88,17 +88,35 @@ async def calculate_orbit_task(task_data: dict) -> Dict[str, Any]:
         }
 
 async def calculate_closest_approach_task(task_data: dict) -> Dict[str, Any]:
-    """Calculate closest approach time based on orbit elements."""
+    """Calculate closest approach time based on orbit elements and time range from options."""
     task_id = task_data["task_id"]
     orbit_elements = task_data["orbit_elements"]
     options = task_data.get("options", {})
 
     try:
-        # Расчёт сближения
-        start_time = datetime.fromisoformat(options.get("start_time", datetime.utcnow().isoformat()))
-        end_time = datetime.fromisoformat(options.get("end_time", (datetime.utcnow().replace(year=datetime.utcnow().year + 1)).isoformat()))
+        # Извлекаем временные границы из options
+        start_time_str = options.get("observation_start_time")
+        end_time_str = options.get("observation_end_time")
+
+        # Если не заданы — используем значения по умолчанию
+        if start_time_str:
+            start_time = datetime.fromisoformat(start_time_str.replace("Z", ""))
+        else:
+            start_time = datetime.now()
+
+        if end_time_str:
+            end_time = datetime.fromisoformat(end_time_str.replace("Z", ""))
+        else:
+            end_time = datetime.now().replace(year=datetime.now().year + 1)
+
+        # Количество шагов
         time_steps = options.get("time_steps", 1000)
 
+        # Проверяем валидность диапазона
+        if start_time >= end_time:
+            raise ValueError("observation_start_time must be earlier than observation_end_time")
+
+        # Расчёт сближения
         closest_approach_result = calculator.calculate_closest_approach(
             orbit_elements=orbit_elements,
             start_time=start_time,
@@ -116,6 +134,7 @@ async def calculate_closest_approach_task(task_data: dict) -> Dict[str, Any]:
         }
 
     except Exception as e:
+        logger.error(f"Error in calculate_closest_approach_task for task {task_id}: {e}", exc_info=True)
         return {
             "task_id": task_id,
             "status": "failed",
