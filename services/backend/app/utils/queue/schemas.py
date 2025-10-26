@@ -1,4 +1,4 @@
-from pydantic import BaseModel
+from pydantic import UUID4, BaseModel
 from typing import List, Optional
 from datetime import datetime
 
@@ -13,6 +13,6 @@ class OrbitCalculationRequest(BaseModel):
     options: Optional[dict] = {}
 
 class TaskResponse(BaseModel):
-    task_id: str
+    task_id: UUID4
     status: str
     submitted_at: datetime
