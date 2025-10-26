@@ -1,13 +1,14 @@
 from datetime import datetime
-from typing import Optional
+from typing import List, Optional
 import uuid
 from fastapi import APIRouter, Depends, HTTPException
+from pydantic import UUID4
 from starlette import status
 from app.schemas import GetObservations, CreateObservations
 from app.models import CalculationTask, CalculationTaskStatus, Comets, User, Observatories
 from app.utils.contrib import get_current_user
 from app.utils.queue.queue import send_calculation_task
-from app.services.observation import get_all, create_observation, get_by_uuid, delete_by_uuid
+from app.services.observations import get_all, create_observation, get_by_uuid, delete_by_uuid
 
 router = APIRouter(prefix="/observations")
 

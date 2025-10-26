@@ -1,4 +1,5 @@
 from datetime import datetime
+import json
 from typing import Optional
 import uuid
 from fastapi import APIRouter, Depends, HTTPException, UploadFile, File, Form
@@ -6,7 +7,7 @@ from starlette import status
 from app.utils.queue.schemas import OrbitCalculationRequest, TaskResponse
 from app.models import CalculationTask, CalculationTaskStatus, Comets, User, Observations
 from app.utils.contrib import get_current_user
-from app.utils.queue.queue import send_calculation_task
+from app.utils.queue.queue import send_orbit_calculation_task
 from app.utils.minio_client import get_minio_client
 from PIL import Image
 import io
@@ -95,11 +96,11 @@ async def calculate_orbit(
         user=user,
         comet=comet,
         status=CalculationTaskStatus.PROCESSING,
-        raw_observations=[obs.model_dump() for obs in request.observations],
+        raw_observations = [obs.model_dump(mode='json') for obs in request.observations],
         location_code=request.options.get('location_code', '500'),
     )
 
-    success = await send_calculation_task(
+    success = await send_orbit_calculation_task(
         task_id,
         str(user.uuid),
         request
