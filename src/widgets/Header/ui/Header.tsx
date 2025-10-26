@@ -1,45 +1,52 @@
 import React from 'react';
-import { Link, useLocation } from 'react-router-dom';
+import { FiClock, FiUser, FiLogOut } from 'react-icons/fi';
+import { Link } from 'react-router-dom';
 import styles from './Header.module.css';
+import { useAuth } from '../../../app/providers/AuthProvider'; 
 
-export const Header: React.FC = () => {
-  const location = useLocation();
+const Header: React.FC = () => {
+  const { user, logout, isLoading } = useAuth();
 
   return (
     <header className={styles.header}>
-      <div className={styles.logo}>
-        <Link to="/">cometrack 2.0</Link>
-      </div>
-      
-      <nav className={styles.nav}>
-        <Link 
-          to="/" 
-          className={`${styles.navLink} ${location.pathname === '/' ? styles.active : ''}`}
-        >
-          Расчет
-        </Link>
-        <Link 
-          to="/library" 
-          className={`${styles.navLink} ${location.pathname === '/library' ? styles.active : ''}`}
-        >
-          Библиотека
-        </Link>
-        <Link 
-          to="/projects" 
-          className={`${styles.navLink} ${location.pathname === '/projects' ? styles.active : ''}`}
-        >
-          Проекты
-        </Link>
-      </nav>
+      <Link to="/" className={styles.logoLink}>
+        <div className={styles.logo}>
+          cometrak 2.0
+        </div>
+      </Link>
 
-      <div className={styles.userSection}>
-        <Link to="/profile" className={styles.userIcon}>
-          {/* Иконка пользователя */}
-          <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
-            <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/>
-          </svg>
+      <nav className={styles.navigation}>
+        <Link to="/" className={styles.navLink}>Расчет</Link>
+        <Link to="/library" className={styles.navLink}>Библиотека астрономических тел</Link>
+        <Link to="/projects" className={styles.navLink}>Проекты</Link>
+      </nav>
+      
+      <div className={styles.userActions}>
+        <Link to="/history" className={styles.iconLink} title="История наблюдений">
+          <FiClock size={20} />
         </Link>
+        
+        {!isLoading && (
+          user ? (
+            <>
+              {/* ЗАМЕНИЛИ кнопку на ссылку на профиль */}
+              <Link to="/profile" className={styles.username} title="Мой профиль">
+                {user.username}
+              </Link>
+              <button onClick={logout} className={styles.iconButton} title="Выйти">
+                <FiLogOut size={20} />
+              </button>
+            </>
+          ) : (
+            /* ЗАМЕНИЛИ кнопку на ссылку на страницу входа/регистрации */
+            <Link to="/login" className={styles.iconButton} title="Войти">
+              <FiUser size={20} />
+            </Link>
+          )
+        )}
       </div>
     </header>
   );
 };
+
+export default Header;

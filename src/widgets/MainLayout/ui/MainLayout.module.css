@@ -2,8 +2,30 @@
   display: flex;
   flex-direction: column;
   min-height: 100vh;
+  /* --- КЛЮЧЕВОЕ ИЗМЕНЕНИЕ №1 --- */
+  /* position: relative нужно, чтобы z-index для дочерних элементов работал корректно */
+  position: relative; 
 }
 
+/* --- НОВЫЙ КЛАСС ДЛЯ 3D-ФОНА --- */
+.backgroundCanvas {
+  position: fixed; /* Закрепляем фон, чтобы он не скроллился */
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100vh; /* Занимает всю высоту экрана */
+  overflow: hidden;
+  /* --- КЛЮЧЕВОЕ ИЗМЕНЕНИЕ №2 --- */
+  /* z-index: -1 — это магия! Он помещает этот элемент ПОЗАДИ всего остального контента */
+  z-index: -1; 
+}
+
+/* --- КОНТЕНТ СТРАНИЦЫ --- */
 .content {
   flex-grow: 1;
+  /* --- КЛЮЧЕВОЕ ИЗМЕНЕНИЕ №3 --- */
+  /* position: relative и z-index гарантируют, что контент будет НАД фоном */
+  position: relative;
+  z-index: 1;
+  /* background: transparent; — Убедитесь, что у контента нет своего фона! */
 }

@@ -1,0 +1,122 @@
+/* ---- Контейнер контента ---- */
+.container {
+    max-width: 900px;
+    margin: 0 auto; /* Центрирование блока с контентом */
+    padding: 2rem 1rem; /* Отступы сверху/снизу и по бокам */
+}
+
+/* ---- Хлебные крошки (Breadcrumbs) ---- */
+.breadcrumbs {
+    color: #8e8e93; /* Тусклый цвет текста */
+    margin-bottom: 1.5rem;
+}
+
+.breadcrumbs a {
+    color: #ffffff;
+    text-decoration: none;
+    transition: color 0.3s;
+}
+
+.breadcrumbs a:hover {
+    color: #b0b0b0;
+}
+
+/* ---- Временная шкала (Timeline) ---- */
+.timeline {
+    position: relative;
+    /* Отступ слева больше не нужен, так как линии нет */
+    /* padding-left: 5rem; - УДАЛЕНО */
+}
+
+/* 
+  Блок .timeline::before, который рисовал вертикальную линию, полностью удален.
+*/
+
+/* ---- Кнопка фильтра по дате ---- */
+.dateRange {
+    background-color: #241EF5;
+    color: #ffffff;
+    border: none;
+    border-radius: 15px;
+    padding: 0.75rem 1.25rem;
+    font-size: 1rem;
+    font-family: inherit; /* Наследуем шрифт */
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    /* Отрицательный отступ больше не нужен */
+    /* margin-left: -5rem; - УДАЛЕНО */
+    margin-bottom: 2.5rem;
+    transition: background-color 0.3s;
+}
+
+.dateRange:hover {
+    background-color: #3a4cdd;
+}
+
+
+/* ---- Группа элементов на шкале ---- */
+.timelineGroup {
+    position: relative;
+    padding-bottom: 1.5rem;
+}
+
+.timelineDate {
+  color: #ffffff;
+  font-size: 24px;
+  font-weight: 900;
+  margin-bottom: 1rem; /* Добавляем отступ под датой */
+  margin-left: 1rem; /* Добавляем отступ под датой */
+}
+
+/* 
+  Блок .timelineGroup::before, который рисовал точки на линии, полностью удален.
+*/
+
+.timelineItem {
+    margin-bottom: 0.75rem;
+}
+.timelineItem:last-child {
+    margin-bottom: 0;
+}
+
+/* ---- Карточки наблюдений ---- */
+.card {
+  background-color: #171717; /* Новый цвет фона */
+  border: 0.3px solid #ffffff; /* Новая белая обводка */
+  border-radius: 25px;
+  padding: 1.5rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.cardContent h3 {
+  margin: 0 0 0.25rem 0;
+  font-size: 1.25rem;
+  font-weight: 500;
+  color: #FCFCFC; /* Новый цвет заголовка */
+}
+
+.cardContent p {
+    margin: 0;
+    color: #8e8e93;
+    font-size: 0.9rem;
+}
+
+.cardAction {
+  color: #241EF5; /* Новый цвет для результата */
+  text-decoration: none;
+  font-size: 1.5rem;
+  font-weight: 600;
+}
+.cardAction:hover {
+    color: #6a7cff;
+}
+
+/* ---- Конец истории ---- */
+.endOfHistory {
+    text-align: center;
+    color: #8e8e93;
+    padding: 2rem 0;
+}
